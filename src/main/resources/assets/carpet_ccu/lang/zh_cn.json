@@ -19,5 +19,10 @@
 	"carpet.rule.ccuCommandBatchPlayerAction.name": "ccuCommandBatchPlayerAction",
 	"carpet.rule.ccuCommandBatchPlayerAction.desc": "开启 /ccuplayer 命令：对一批假人执行任意 /player 动作。取值 false / true / ops / 0-4，含义与 commandPlayer 相同。",
 	"carpet.rule.ccuCommandBatchPlayerAction.extra.0": "用法：/ccuplayer <名字前缀|all> <动作>，例如 /ccuplayer bot use continuous（批量连续右键）、/ccuplayer bot jump（批量跳）、/ccuplayer all stop。",
-	"carpet.rule.ccuCommandBatchPlayerAction.extra.1": "动作语法完全交给 Carpet 的 /player 解析，因此 /player 支持的动作这里都能用。"
+	"carpet.rule.ccuCommandBatchPlayerAction.extra.1": "动作语法完全交给 Carpet 的 /player 解析，因此 /player 支持的动作这里都能用。",
+
+	"carpet.rule.ccuCommandPlayerLoadRange.name": "ccuCommandPlayerLoadRange",
+	"carpet.rule.ccuCommandPlayerLoadRange.desc": "开启 /ccuload 命令：给某个假人单独设定加载范围（区块数）。取值 false / true / ops / 0-4，含义与 commandPlayer 相同。",
+	"carpet.rule.ccuCommandPlayerLoadRange.extra.0": "用法：/ccuload <假人名> <半径|default>，例如 /ccuload bot1 8；default 恢复成跟随服务器视距。",
+	"carpet.rule.ccuCommandPlayerLoadRange.extra.1": "未设置的假人不额外加载，行为与原版一致。设置只能扩大范围，无法缩小到服务器视距以下。"
 }

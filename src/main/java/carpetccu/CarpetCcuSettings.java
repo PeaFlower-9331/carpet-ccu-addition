@@ -55,4 +55,10 @@ public final class CarpetCcuSettings {
 	 */
 	@Rule(categories = {CCU, CCU_FAKE_PLAYER, RuleCategory.COMMAND})
 	public static String ccuCommandBatchPlayerAction = "ops";
+
+	/**
+	 * 控制 {@code /ccuload} 命令的可用级别，取值同 {@code commandPlayer}。
+	 */
+	@Rule(categories = {CCU, CCU_FAKE_PLAYER, RuleCategory.COMMAND})
+	public static String ccuCommandPlayerLoadRange = "ops";
 }

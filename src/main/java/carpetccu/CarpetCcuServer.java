@@ -5,6 +5,8 @@ import carpet.CarpetServer;
 import carpet.api.settings.Rule;
 import carpet.utils.Translations;
 import carpetccu.command.BatchPlayerActionCommand;
+import carpetccu.command.LoadRangeCommand;
+import carpetccu.feature.FakePlayerChunkLoader;
 import carpetccu.feature.FakePlayerProfilePreloader;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandBuildContext;
@@ -64,6 +66,8 @@ public class CarpetCcuServer implements CarpetExtension {
 		debug("服务器已加载");
 		// 命令树此时通常已建好（所有模组都注册完毕），把批量动作并进 Carpet Org 的批量命令
 		commandsAttached = BatchPlayerActionCommand.attachToBatchCommand(server) > 0;
+		// 读取假人加载范围配置（按名字保存，重新召唤后依然生效）
+		FakePlayerChunkLoader.load();
 	}
 
 	@Override
@@ -82,6 +86,8 @@ public class CarpetCcuServer implements CarpetExtension {
 			attachAttempts++;
 			commandsAttached = BatchPlayerActionCommand.attachToBatchCommand(server) > 0;
 		}
+		// 假人加载范围：按配置给假人维持区块 ticket（内部每 20 刻对账一次）
+		FakePlayerChunkLoader.tick(server);
 	}
 
 	@Override
@@ -92,6 +98,10 @@ public class CarpetCcuServer implements CarpetExtension {
 	@Override
 	public void onPlayerLoggedOut(ServerPlayer player) {
 		debug("玩家登出：%s", player.getScoreboardName());
+		// 假人下线时立刻撤掉它的额外加载 ticket
+		if (player.level() instanceof net.minecraft.server.level.ServerLevel level) {
+			FakePlayerChunkLoader.forget(level.getServer(), player.getUUID());
+		}
 	}
 
 	@Override
@@ -114,6 +124,7 @@ public class CarpetCcuServer implements CarpetExtension {
 	@Override
 	public void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext commandBuildContext) {
 		BatchPlayerActionCommand.register(dispatcher, commandBuildContext);
+		LoadRangeCommand.register(dispatcher, commandBuildContext);
 	}
 
 	// ---------------------------------------------------------------- 元信息

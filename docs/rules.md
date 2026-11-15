@@ -8,6 +8,45 @@
 | `ccuFakePlayerProfilePreload` | boolean | `false` | CCU / CCU_fake_player / survival / feature | 服务器启动时预加载假人档案 |
 | `ccuFakePlayerNames` | string | `""` | CCU / CCU_fake_player / survival / feature | 要预加载的假人名字，逗号或空格分隔 |
 | `ccuCommandBatchPlayerAction` | string | `"ops"` | CCU / CCU_fake_player / command | `/ccuplayer` 与 `batch action` 的可用级别，取值同 `commandPlayer` |
+| `ccuCommandPlayerLoadRange` | string | `"ops"` | CCU / CCU_fake_player / command | `/ccuload` 的可用级别，取值同 `commandPlayer` |
+
+## 假人加载范围
+
+### 命令
+
+```
+/ccuload                       # 列出已有的设置
+/ccuload bot1 8                # bot1 周围 8 个区块保持加载（实体刻）
+/ccuload bot1 default          # 恢复默认：跟随服务器视距
+```
+
+- 未设置的假人**不额外加载**，行为与原版完全一致（只按服务器 `view-distance` 加载）。
+- 设置按假人**名字**保存，写在 `config/carpet-ccu-addition/load-range.json`，假人重新召唤、服务器重启后都继续生效。
+- 半径范围 `0`–`32`。
+
+### 原理
+
+原版对玩家（包括假人）的区块加载半径是由服务器视距**统一**决定的，没有按玩家单独配置的入口。
+所以这里不等价于改「视距」，而是给指定假人**额外挂一个区块 ticket**：
+
+```
+TicketType(CCU, 不持久化, 加载 + 模拟)
+  → ServerChunkCache#addTicketWithRadius(type, 假人所在区块, 半径 + 2)
+```
+
+换算关系：`TicketStorage#addTicketWithRadius(type, pos, r)` 创建的 ticket 等级是 `33 - r`，
+而 ticket 等级每远离一个区块 +1，实体刻要求等级 ≤ 31；因此想要「半径 R 内实体刻」需要传 `R + 2`。
+
+假人移动超过一个区块或半径变化时会撤销旧 ticket、挂新 ticket；假人下线立即撤销。
+
+### 注意
+
+| 事项 | 说明 |
+| --- | --- |
+| 只能扩大，不能缩小 | 原版对玩家本身就有视距范围内的 ticket，所以设置值 ≤ 服务器视距时效果等同未设置 |
+| ticket 不持久化 | 类型不带 `FLAG_PERSIST`，重启后不会在存档里留下残留 |
+| 开销 | 半径每 +1，ticket 覆盖的区块按平方增长，32 区块 ≈ 4000+ 区块，注意服务器性能 |
+| 生效延迟 | 新区块需要生成，半径较大时第一次生效可能要几秒到十几秒 |
 
 ## 批量假人动作
 

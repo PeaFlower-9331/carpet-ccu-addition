@@ -12,6 +12,7 @@
 | --- | --- |
 | `ccuFakePlayerProfilePreload` + `ccuFakePlayerNames` | 假人档案预加载：启动时把假人名字登记进 `usercache.json`，`/player <名字> spawn` 直接命中，不再依赖 Mojang 查询 |
 | `ccuCommandBatchPlayerAction` | 批量假人动作：`/playerManager batch action <目标> <动作>`（并入 Carpet Org Addition）或独立的 `/ccuplayer`；动作列表由 `/player` 命令树实时生成，可用 `/player` 的全部动作（背包/末影箱查看除外） |
+| `ccuCommandPlayerLoadRange` | 假人加载范围：`/ccuload <假人名> <半径\|default>`，给单个假人单独设定额外加载半径，未设置则跟随服务器视距 |
 | `ccuDebugLog` | 输出本模组生命周期详细日志，便于排查 |
 
 详见 [docs/rules.md](docs/rules.md)。
