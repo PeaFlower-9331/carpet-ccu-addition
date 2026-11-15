@@ -1,0 +1,7 @@
+{
+	"carpet.category.CCU": "CCU",
+
+	"carpet.rule.ccuDebugLog.name": "ccuDebugLog",
+	"carpet.rule.ccuDebugLog.desc": "Outputs verbose lifecycle logs of Carpet CCU Addition, for debugging.",
+	"carpet.rule.ccuDebugLog.extra.0": "Only changes log verbosity; no gameplay effect."
+}

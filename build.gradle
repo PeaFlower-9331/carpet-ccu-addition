@@ -1,0 +1,38 @@
+plugins {
+	id 'fabric-loom' version '1.16.3' apply false
+}
+
+// 一次性构建 settings.json 里登记的所有 MC 版本，并把成品 jar 汇总到 build/libs。
+tasks.register('buildAndGather') {
+	group = 'build'
+	description = '构建全部已登记的 Minecraft 版本，并汇总产物到 build/libs'
+
+	subprojects {
+		dependsOn project.tasks.named('build').get()
+	}
+
+	doFirst {
+		println '正在汇总各版本产物...'
+		def rootLibs = file('build/libs')
+		delete fileTree(rootLibs) {
+			include '*'
+		}
+	}
+
+	doLast {
+		def rootLibs = file('build/libs')
+		rootLibs.mkdirs()
+		subprojects.each { p ->
+			def libs = p.layout.buildDirectory.dir('libs').get().asFile
+			if (libs.exists()) {
+				copy {
+					from libs
+					include '*.jar'
+					exclude '*-dev.jar', '*-sources.jar'
+					into rootLibs
+				}
+			}
+		}
+		println "产物已汇总到 ${rootLibs}"
+	}
+}

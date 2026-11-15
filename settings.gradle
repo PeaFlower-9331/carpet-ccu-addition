@@ -1,0 +1,26 @@
+import groovy.json.JsonSlurper
+
+pluginManagement {
+	repositories {
+		maven {
+			name = 'Fabric'
+			url = 'https://maven.fabricmc.net/'
+		}
+		mavenCentral()
+		gradlePluginPortal()
+	}
+}
+
+rootProject.name = 'carpet-ccu-addition'
+
+// 每一个 MC 版本都是 `versions/<mcver>` 目录下的一个子项目，
+// 共用根目录的 common.gradle 与 src/main 源码树。
+def versions = new JsonSlurper().parseText(file('settings.json').text).versions as List<String>
+
+versions.each { String mcVersion ->
+	include(":${mcVersion}")
+
+	def sub = project(":${mcVersion}")
+	sub.projectDir = file("versions/${mcVersion}")
+	sub.buildFileName = '../../common.gradle'
+}

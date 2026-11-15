@@ -1,0 +1,7 @@
+{
+	"carpet.category.CCU": "CCU",
+
+	"carpet.rule.ccuDebugLog.name": "ccuDebugLog",
+	"carpet.rule.ccuDebugLog.desc": "输出 Carpet CCU Addition 的详细生命周期日志，便于排查问题。",
+	"carpet.rule.ccuDebugLog.extra.0": "只影响日志详细程度，不影响游戏行为。"
+}

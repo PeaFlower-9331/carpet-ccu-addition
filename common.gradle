@@ -1,0 +1,101 @@
+plugins {
+	id 'fabric-loom'
+	id 'maven-publish'
+}
+
+final int javaVersion = (project.java_version ?: '21') as int
+
+repositories {
+	maven {
+		name = 'masa'
+		url = 'https://masa.dy.fi/maven'
+	}
+	mavenCentral()
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+
+	// Carpet 本体使用 Mojang 官方映射构建，附属必须保持同一套映射，否则对不上名字。
+	mappings loom.layered() {
+		officialMojangMappings()
+	}
+
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "carpet:fabric-carpet:${project.carpet_version}"
+}
+
+// 子项目位于 versions/<mcver>，源码树共用根目录的 src/main；
+// 若该版本需要专属代码，可在 versions/<mcver>/src/main/java 下放同名源码目录叠加。
+sourceSets {
+	main {
+		java.srcDirs = [rootProject.file('src/main/java')]
+		resources.srcDirs = [rootProject.file('src/main/resources')]
+
+		def versionSrc = project.file('src/main')
+		if (versionSrc.exists()) {
+			java.srcDirs += new File(versionSrc, 'java')
+			resources.srcDirs += new File(versionSrc, 'resources')
+		}
+	}
+}
+
+base {
+	archivesName = project.archives_base_name
+}
+
+group = project.maven_group
+version = "${project.mod_version}-mc${project.minecraft_version}"
+
+loom {
+	// 各版本共用同一个 run 目录，方便换版本时复用存档与配置
+	runConfigs.configureEach {
+		runDir '../../run'
+	}
+}
+
+processResources {
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	// 中文 Windows 下默认编码是 GBK，不指定会把 fabric.mod.json 里的中文写成乱码
+	filteringCharset = 'UTF-8'
+	inputs.property 'id', project.mod_id
+	inputs.property 'name', project.mod_name
+	inputs.property 'version', project.mod_version
+	inputs.property 'minecraft_dependency', project.minecraft_dependency
+
+	filesMatching('fabric.mod.json') {
+		expand(
+				id                 : project.mod_id,
+				name               : project.mod_name,
+				version            : project.mod_version,
+				minecraft_dependency: project.minecraft_dependency
+		)
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.encoding = 'UTF-8'
+	options.release.set(javaVersion)
+	options.compilerArgs << '-Xlint:deprecation' << '-Xlint:unchecked'
+}
+
+java {
+	withSourcesJar()
+	sourceCompatibility = JavaVersion.toVersion(javaVersion)
+	targetCompatibility = JavaVersion.toVersion(javaVersion)
+}
+
+jar {
+	from(rootProject.file('LICENSE')) {
+		rename { "${it}_${project.archives_base_name}" }
+	}
+}
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+			artifactId = base.archivesName.get()
+		}
+	}
+}

@@ -1,0 +1,22 @@
+{
+	"schemaVersion": 1,
+	"id": "${id}",
+	"version": "${version}",
+	"name": "${name}",
+	"description": "基于 Fabric Carpet 的服务端规则扩展。",
+	"authors": [
+		"CCU"
+	],
+	"license": "MIT",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"carpetccu.CarpetCcuAddition"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.16.0",
+		"minecraft": "${minecraft_dependency}",
+		"carpet": "*"
+	}
+}
