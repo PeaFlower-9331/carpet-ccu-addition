@@ -1,7 +1,18 @@
 {
 	"carpet.category.CCU": "CCU",
+	"carpet.category.CCU_fake_player": "假人",
 
 	"carpet.rule.ccuDebugLog.name": "ccuDebugLog",
 	"carpet.rule.ccuDebugLog.desc": "输出 Carpet CCU Addition 的详细生命周期日志，便于排查问题。",
-	"carpet.rule.ccuDebugLog.extra.0": "只影响日志详细程度，不影响游戏行为。"
+	"carpet.rule.ccuDebugLog.extra.0": "只影响日志详细程度，不影响游戏行为。",
+
+	"carpet.rule.ccuFakePlayerProfilePreload.name": "ccuFakePlayerProfilePreload",
+	"carpet.rule.ccuFakePlayerProfilePreload.desc": "服务器启动时预加载假人档案：把 ccuFakePlayerNames 里的名字登记进 usercache，之后 /player 召唤同名假人时无需再向 Mojang 查询。",
+	"carpet.rule.ccuFakePlayerProfilePreload.extra.0": "已有档案的名字保持原 UUID 与皮肤不变；没有档案的按离线 UUID 生成，重启后保持不变。",
+	"carpet.rule.ccuFakePlayerProfilePreload.extra.1": "仅影响之后召唤的假人，不会影响已经在线的玩家。",
+	"carpet.rule.ccuFakePlayerProfilePreload.extra.2": "改动本规则或名字列表后需要重启服务器才会生效。",
+
+	"carpet.rule.ccuFakePlayerNames.name": "ccuFakePlayerNames",
+	"carpet.rule.ccuFakePlayerNames.desc": "要预加载档案的假人名字列表，用逗号或空格分隔，例如 bot1,bot2,bot3。",
+	"carpet.rule.ccuFakePlayerNames.extra.0": "名字需符合 Minecraft 用户名规则：3-16 位，只能包含字母、数字与下划线，非法名字会被跳过并记录警告。"
 }

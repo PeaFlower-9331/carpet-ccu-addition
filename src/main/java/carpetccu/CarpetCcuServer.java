@@ -4,6 +4,7 @@ import carpet.CarpetExtension;
 import carpet.CarpetServer;
 import carpet.api.settings.Rule;
 import carpet.utils.Translations;
+import carpetccu.feature.FakePlayerProfilePreloader;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
@@ -52,6 +53,8 @@ public class CarpetCcuServer implements CarpetExtension {
 	@Override
 	public void onServerLoadedWorlds(MinecraftServer server) {
 		debug("世界已加载");
+		// 假人档案预加载：把配置里的假人名登记进 usercache，供 /player 召唤时直接命中
+		FakePlayerProfilePreloader.preload(server);
 	}
 
 	@Override

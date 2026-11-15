@@ -28,6 +28,11 @@ public final class CarpetCcuSettings {
 	 */
 	public static final String CCU = "CCU";
 
+	/**
+	 * 假人相关规则的子分类，{@code /carpet list CCU_fake_player} 可单独筛选。
+	 */
+	public static final String CCU_FAKE_PLAYER = "CCU_fake_player";
+
 	private CarpetCcuSettings() {
 	}
 
@@ -37,4 +42,10 @@ public final class CarpetCcuSettings {
 			strict = true
 	)
 	public static boolean ccuDebugLog = false;
+
+	@Rule(categories = {CCU, CCU_FAKE_PLAYER, RuleCategory.SURVIVAL, RuleCategory.FEATURE})
+	public static boolean ccuFakePlayerProfilePreload = false;
+
+	@Rule(categories = {CCU, CCU_FAKE_PLAYER, RuleCategory.SURVIVAL, RuleCategory.FEATURE})
+	public static String ccuFakePlayerNames = "";
 }

@@ -2,12 +2,18 @@
 
 基于 [Fabric Carpet](https://github.com/gnembon/fabric-carpet) 的服务端扩展模组（地毯附属）。
 
-当前仓库是**可编译的工程骨架**：Carpet 扩展接入、规则系统、多版本构建链路、语言文件都已就绪，
-具体功能规则等你确认需求后再往里加。
-
 - 主目标版本：**Minecraft 1.21.11 / Fabric**
 - 形态：纯服务端（单机存档同样生效，因为单机自带集成服务端）
 - 规则命令：`/carpet`（本模组规则分类为 `CCU`，`/carpet list CCU` 可直接筛选）
+
+## 已实现功能
+
+| 规则 | 说明 |
+| --- | --- |
+| `ccuFakePlayerProfilePreload` + `ccuFakePlayerNames` | 假人档案预加载：启动时把假人名字登记进 `usercache.json`，`/player <名字> spawn` 直接命中，不再依赖 Mojang 查询 |
+| `ccuDebugLog` | 输出本模组生命周期详细日志，便于排查 |
+
+详见 [docs/rules.md](docs/rules.md)。
 
 ## 环境要求
 

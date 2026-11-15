@@ -1,7 +1,18 @@
 {
 	"carpet.category.CCU": "CCU",
+	"carpet.category.CCU_fake_player": "fake_player",
 
 	"carpet.rule.ccuDebugLog.name": "ccuDebugLog",
 	"carpet.rule.ccuDebugLog.desc": "Outputs verbose lifecycle logs of Carpet CCU Addition, for debugging.",
-	"carpet.rule.ccuDebugLog.extra.0": "Only changes log verbosity; no gameplay effect."
+	"carpet.rule.ccuDebugLog.extra.0": "Only changes log verbosity; no gameplay effect.",
+
+	"carpet.rule.ccuFakePlayerProfilePreload.name": "ccuFakePlayerProfilePreload",
+	"carpet.rule.ccuFakePlayerProfilePreload.desc": "Preloads fake player profiles on server start: registers every name in ccuFakePlayerNames into usercache, so spawning a bot with /player no longer needs a Mojang lookup.",
+	"carpet.rule.ccuFakePlayerProfilePreload.extra.0": "Names that already have a profile keep their UUID and skin; unknown names get a deterministic offline UUID that survives restarts.",
+	"carpet.rule.ccuFakePlayerProfilePreload.extra.1": "Only affects bots spawned afterwards, never online players.",
+	"carpet.rule.ccuFakePlayerProfilePreload.extra.2": "Changing this rule or the name list requires a server restart.",
+
+	"carpet.rule.ccuFakePlayerNames.name": "ccuFakePlayerNames",
+	"carpet.rule.ccuFakePlayerNames.desc": "Comma or space separated fake player names to preload, e.g. bot1,bot2,bot3.",
+	"carpet.rule.ccuFakePlayerNames.extra.0": "Names must be valid Minecraft usernames: 3-16 chars of letters, digits and underscore. Invalid names are skipped with a warning."
 }
