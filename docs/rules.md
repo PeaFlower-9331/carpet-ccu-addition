@@ -36,7 +36,38 @@
 
 ### 动作
 
-动作不自行解析，直接交给 Carpet 的 `/player` 执行，所以 **`/player` 支持什么，这里就支持什么**：
+**列表直接由 Carpet 的 `/player` 命令树实时生成**（并按动作自身的 `requires` 过滤），所以和 `/player` 完全一致，Carpet 以后增删动作这里自动跟随。
+
+查看当前可用动作：
+
+```
+/playerManager batch action      # 或 /ccuplayer
+```
+
+在默认配置（Carpet 1.4.193 + Carpet Org 1.41.7）下共 20 个：
+
+| 动作 | 参数 | 说明 |
+| --- | --- | --- |
+| `stop` | — | 停止该假人的全部动作 |
+| `use` | `once`（默认）/ `continuous` / `interval <刻>` | 右键/使用，连续右键用 `use continuous` |
+| `jump` | 同上 | 跳跃 |
+| `attack` | 同上 | 左键攻击 |
+| `drop` | `once/continuous/interval` 或 `all/mainhand/offhand/<槽位>` | 丢弃物品 |
+| `dropStack` | 同上 | 整摞丢弃 |
+| `swapHands` | `once/continuous/interval` | 主副手交换 |
+| `hotbar` | `<槽位>` | 切换快捷栏槽位 |
+| `kill` | — | 杀死假人（使其下线） |
+| `shadow` | — | 把真人转成影子假人（对假人无效） |
+| `mount` | `[anything]` | 骑乘附近实体 |
+| `dismount` | — | 下坐骑 |
+| `sneak` / `unsneak` | — | 潜行 开/关 |
+| `sprint` / `unsprint` | — | 疾跑 开/关 |
+| `look` | `north/south/east/west/up/down/at <x y z>/<方向>` | 转向 |
+| `turn` | `left/right/back/<yaw> <pitch>` | 相对旋转 |
+| `move` | `forward/backward/left/right` | 持续移动（用 `stop` 或 `move` 停止） |
+| `spawn` | `[in <模式>] [at <坐标> ...]` | 召唤新假人；批量场景通常无意义（目标已在线） |
+
+示例：
 
 ```bash
 # 批量连续右键
@@ -49,16 +80,9 @@
 # 批量每 5 刻攻击一次
 /playerManager batch action bot attack interval 5
 
-# 批量潜行 / 取消潜行
-/playerManager batch action bot sneak
-/playerManager batch action bot unsneak
-
 # 批量前进 / 停下
 /playerManager batch action bot move forward
 /playerManager batch action all stop
-
-# 批量看向某个方向
-/playerManager batch action bot look north
 ```
 
 每条动作的回显被抑制，批量操作不会刷屏，结束时只回一行汇总：
@@ -66,6 +90,13 @@
 ```
 已对 10 个假人执行：/player <名字> use continuous
 ```
+
+### 不参与批量的动作
+
+| 动作 | 原因 |
+| --- | --- |
+| `inventory` / `enderChest` | 「查看假人背包/末影箱」是打开界面的动作，一次开一堆没有意义；需要时对单个假人执行 `/player <名字> inventory` |
+| 被规则关闭的动作（如 `teleport`、`mannequin`） | 由 Carpet Org 自己的 `playerCommand` 系列开关控制，关着时 `/player` 本身也解析不到，因此不会出现在列表里 |
 
 ### 实现说明
 

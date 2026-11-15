@@ -21,6 +21,7 @@ import net.minecraft.server.level.ServerPlayer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 /**
  * 批量假人动作。
@@ -52,6 +53,12 @@ public final class BatchPlayerActionCommand {
 
 	private static final String ACTION_NODE = "action";
 
+	/**
+	 * 不能批量执行的动作：这些是「打开界面」类动作（Carpet Org Addition 扩展给 /player 的），
+	 * 一次开一堆背包/末影箱既没有意义，也需要真实的玩家来源。批量时直接跳过并提示。
+	 */
+	private static final Set<String> NOT_BATCHABLE = Set.of("inventory", "enderChest");
+
 	private BatchPlayerActionCommand() {
 	}
 
@@ -61,6 +68,7 @@ public final class BatchPlayerActionCommand {
 	public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext buildContext) {
 		dispatcher.register(Commands.literal("ccuplayer")
 				.requires(BatchPlayerActionCommand::allowed)
+				.executes(BatchPlayerActionCommand::showActions)
 				.then(Commands.argument("target", StringArgumentType.word())
 						.suggests((context, builder) -> SharedSuggestionProvider.suggest(
 								suggestions(context.getSource().getServer()), builder))
@@ -117,12 +125,81 @@ public final class BatchPlayerActionCommand {
 	private static LiteralCommandNode<CommandSourceStack> buildActionNode() {
 		return Commands.literal(ACTION_NODE)
 				.requires(BatchPlayerActionCommand::allowed)
+				.executes(BatchPlayerActionCommand::showActions)
 				.then(Commands.argument("target", StringArgumentType.word())
 						.suggests((context, builder) -> SharedSuggestionProvider.suggest(
 								suggestions(context.getSource().getServer()), builder))
 						.then(Commands.argument("action", StringArgumentType.greedyString())
 								.executes(BatchPlayerActionCommand::run)))
 				.build();
+	}
+
+	/**
+	 * 列出当前可用的批量动作。
+	 *
+	 * <p>列表直接从 Carpet 的 {@code /player} 命令树推导，因此<strong>永远与 {@code /player} 保持一致</strong>：
+	 * Carpet 新增或删除动作，这里自动跟着变，不需要改代码。</p>
+	 */
+	private static int showActions(CommandContext<CommandSourceStack> context) {
+		CommandSourceStack source = context.getSource();
+		List<String> actions = collectActions(source.getServer().getCommands().getDispatcher(), source);
+		if (actions.isEmpty()) {
+			source.sendFailure(Component.literal("找不到 /player 命令，无法列出动作（Carpet 未加载，或规则 commandPlayer 被关闭）"));
+			return 0;
+		}
+
+		source.sendSuccess(() -> Component.literal("批量可用动作（与 /player 一致，共 " + actions.size() + " 个）："), false);
+		for (String action : actions) {
+			source.sendSuccess(() -> Component.literal(" - " + action), false);
+		}
+		source.sendSuccess(() -> Component.literal("用法：/ccuplayer <目标> <动作>，例：/ccuplayer bot use continuous"), false);
+		return actions.size();
+	}
+
+	/**
+	 * 从 {@code /player} 的命令树里收集动作名与它们的一级子参数。
+	 *
+	 * <p>会按 {@code requires} 过滤：Carpet Org Addition 给 {@code /player} 追加的动作
+	 * （{@code inventory}、{@code teleport} 等）由它自己的规则控制开关，关着的时候解析不到，
+	 * 这里也就不列出来，保证「列出来的都能用」。</p>
+	 */
+	private static List<String> collectActions(CommandDispatcher<CommandSourceStack> dispatcher, CommandSourceStack source) {
+		CommandNode<CommandSourceStack> player = dispatcher.getRoot().getChild("player");
+		if (player == null) {
+			return List.of();
+		}
+
+		// /player 的直接子节点是「名字」参数，动作都在它下面
+		CommandNode<CommandSourceStack> nameArgument = player.getChild("player");
+		if (nameArgument == null) {
+			return List.of();
+		}
+
+		List<String> result = new ArrayList<>();
+		for (CommandNode<CommandSourceStack> action : nameArgument.getChildren()) {
+			if (!(action instanceof LiteralCommandNode<CommandSourceStack>)) {
+				continue;
+			}
+			if (NOT_BATCHABLE.contains(action.getName())) {
+				continue;
+			}
+			if (!action.getRequirement().test(source)) {
+				// 被规则关闭的动作（例如 Carpet Org 的 playerCommand 系列开关）
+				continue;
+			}
+			if (action.getChildren().isEmpty()) {
+				result.add(action.getName());
+				continue;
+			}
+			List<String> children = new ArrayList<>();
+			for (CommandNode<CommandSourceStack> child : action.getChildren()) {
+				children.add(child instanceof LiteralCommandNode<CommandSourceStack>
+						? child.getName()
+						: "<" + child.getName() + ">");
+			}
+			result.add(action.getName() + " [" + String.join("|", children) + "]");
+		}
+		return result;
 	}
 
 	private static boolean allowed(CommandSourceStack source) {
@@ -137,6 +214,12 @@ public final class BatchPlayerActionCommand {
 
 		if (action.isEmpty()) {
 			source.sendFailure(Component.literal("动作不能为空，例如：use continuous、jump、stop"));
+			return 0;
+		}
+
+		String head = action.split("\\s+", 2)[0];
+		if (NOT_BATCHABLE.contains(head)) {
+			source.sendFailure(Component.literal("动作 " + head + " 是「打开界面」类动作，不支持批量执行（可对单个假人使用 /player <名字> " + head + "）"));
 			return 0;
 		}
 
@@ -162,7 +245,8 @@ public final class BatchPlayerActionCommand {
 				success++;
 			} catch (CommandSyntaxException e) {
 				source.sendFailure(Component.literal(
-						"动作执行失败：" + command + "（" + e.getMessage() + "；若提示未知命令，请确认规则 commandPlayer 未关闭）"));
+						"动作执行失败：" + command + "（" + e.getMessage()
+								+ "；该动作可能不存在，或被相关规则关闭：Carpet 的 commandPlayer、Carpet Org 的动作开关等）"));
 				return success;
 			}
 		}
