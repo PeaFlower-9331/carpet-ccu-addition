@@ -48,4 +48,11 @@ public final class CarpetCcuSettings {
 
 	@Rule(categories = {CCU, CCU_FAKE_PLAYER, RuleCategory.SURVIVAL, RuleCategory.FEATURE})
 	public static String ccuFakePlayerNames = "";
+
+	/**
+	 * 控制 {@code /ccuplayer} 命令的可用级别，取值与 Carpet 的 {@code commandPlayer} 一致：
+	 * false / true / ops / 0 / 1 / 2 / 3 / 4。
+	 */
+	@Rule(categories = {CCU, CCU_FAKE_PLAYER, RuleCategory.COMMAND})
+	public static String ccuCommandBatchPlayerAction = "ops";
 }

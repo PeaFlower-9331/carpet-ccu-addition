@@ -11,6 +11,7 @@
 | 规则 | 说明 |
 | --- | --- |
 | `ccuFakePlayerProfilePreload` + `ccuFakePlayerNames` | 假人档案预加载：启动时把假人名字登记进 `usercache.json`，`/player <名字> spawn` 直接命中，不再依赖 Mojang 查询 |
+| `ccuCommandBatchPlayerAction` | 批量假人动作：`/playerManager batch action <目标> <动作>`（并入 Carpet Org Addition）或独立的 `/ccuplayer`，可用 `/player` 的全部动作 |
 | `ccuDebugLog` | 输出本模组生命周期详细日志，便于排查 |
 
 详见 [docs/rules.md](docs/rules.md)。
@@ -22,7 +23,7 @@
 | JDK | **21**（Minecraft 1.20.5+ 要求；编译 1.21.11 必须 21） |
 | Gradle | 9.4.1（仓库自带 wrapper，无需手动安装） |
 | Fabric Loader | 0.20.1（`gradle.properties` 可改） |
-| Carpet | 1.21.11-1.4.194+v260107 |
+| Carpet | 1.21.11-1.4.193+v251211（1.4.194 会让 Carpet Org Addition 的 mixin 目标失配） |
 
 ## 构建
 

@@ -14,5 +14,10 @@
 
 	"carpet.rule.ccuFakePlayerNames.name": "ccuFakePlayerNames",
 	"carpet.rule.ccuFakePlayerNames.desc": "要预加载档案的假人名字列表，用逗号或空格分隔，例如 bot1,bot2,bot3。",
-	"carpet.rule.ccuFakePlayerNames.extra.0": "名字需符合 Minecraft 用户名规则：3-16 位，只能包含字母、数字与下划线，非法名字会被跳过并记录警告。"
+	"carpet.rule.ccuFakePlayerNames.extra.0": "名字需符合 Minecraft 用户名规则：3-16 位，只能包含字母、数字与下划线，非法名字会被跳过并记录警告。",
+
+	"carpet.rule.ccuCommandBatchPlayerAction.name": "ccuCommandBatchPlayerAction",
+	"carpet.rule.ccuCommandBatchPlayerAction.desc": "开启 /ccuplayer 命令：对一批假人执行任意 /player 动作。取值 false / true / ops / 0-4，含义与 commandPlayer 相同。",
+	"carpet.rule.ccuCommandBatchPlayerAction.extra.0": "用法：/ccuplayer <名字前缀|all> <动作>，例如 /ccuplayer bot use continuous（批量连续右键）、/ccuplayer bot jump（批量跳）、/ccuplayer all stop。",
+	"carpet.rule.ccuCommandBatchPlayerAction.extra.1": "动作语法完全交给 Carpet 的 /player 解析，因此 /player 支持的动作这里都能用。"
 }

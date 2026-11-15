@@ -7,6 +7,76 @@
 | `ccuDebugLog` | boolean | `false` | CCU / creative / feature | 输出本模组的详细生命周期日志，仅影响日志详细程度 |
 | `ccuFakePlayerProfilePreload` | boolean | `false` | CCU / CCU_fake_player / survival / feature | 服务器启动时预加载假人档案 |
 | `ccuFakePlayerNames` | string | `""` | CCU / CCU_fake_player / survival / feature | 要预加载的假人名字，逗号或空格分隔 |
+| `ccuCommandBatchPlayerAction` | string | `"ops"` | CCU / CCU_fake_player / command | `/ccuplayer` 与 `batch action` 的可用级别，取值同 `commandPlayer` |
+
+## 批量假人动作
+
+### 命令
+
+装了 **Carpet Org Addition** 时，命令并入它的批量命令：
+
+```
+/playerManager batch action <目标> <动作>
+```
+
+没装时（或想用短命令）用等价入口：
+
+```
+/ccuplayer <目标> <动作>
+```
+
+`<目标>` 的匹配规则：
+
+| 写法 | 含义 |
+| --- | --- |
+| `all` 或 `*` | 服务器上所有假人 |
+| 名字前缀 | 不区分大小写，`bot` 命中 `bot_1`、`bot_10`、`botFarm` |
+
+只作用于假人（`EntityPlayerMPFake`），**不会误控真人玩家**。
+
+### 动作
+
+动作不自行解析，直接交给 Carpet 的 `/player` 执行，所以 **`/player` 支持什么，这里就支持什么**：
+
+```bash
+# 批量连续右键
+/playerManager batch action bot use continuous
+
+# 批量跳一次 / 连续跳
+/playerManager batch action bot jump
+/playerManager batch action bot jump continuous
+
+# 批量每 5 刻攻击一次
+/playerManager batch action bot attack interval 5
+
+# 批量潜行 / 取消潜行
+/playerManager batch action bot sneak
+/playerManager batch action bot unsneak
+
+# 批量前进 / 停下
+/playerManager batch action bot move forward
+/playerManager batch action all stop
+
+# 批量看向某个方向
+/playerManager batch action bot look north
+```
+
+每条动作的回显被抑制，批量操作不会刷屏，结束时只回一行汇总：
+
+```
+已对 10 个假人执行：/player <名字> use continuous
+```
+
+### 实现说明
+
+- Carpet Org 的批量命令节点形状是 `batch <prefix> <start> <end> spawn|kill|drop|trial`，
+  而它的命令名允许玩家在配置里改，所以本模组**不硬编码命令名**：服务器启动后按结构找到该节点，
+  在 `batch` 这一层挂一个 `action` 字面量。Brigadier 解析时字面量优先于参数，
+  因此 `batch action ...` 不会被当成 `prefix` 吞掉。
+- 挂载在 `onServerLoaded` 做一次，未命中时在前几个 tick 重试；`/reload` 重建命令树后会重新挂载。
+- 内部通过 `dispatcher.execute("player <名字> " + 动作, source.withSuppressedOutput())` 执行，
+  既复用了 Carpet 的全部语法与校验，也自动跟随 Carpet 后续新增的动作。
+- 若服务器关闭了 Carpet 的 `commandPlayer` 规则，本命令会报“未知命令”，错误信息里会给出提示。
 
 ## 假人档案预加载
 

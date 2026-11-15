@@ -14,5 +14,10 @@
 
 	"carpet.rule.ccuFakePlayerNames.name": "ccuFakePlayerNames",
 	"carpet.rule.ccuFakePlayerNames.desc": "Comma or space separated fake player names to preload, e.g. bot1,bot2,bot3.",
-	"carpet.rule.ccuFakePlayerNames.extra.0": "Names must be valid Minecraft usernames: 3-16 chars of letters, digits and underscore. Invalid names are skipped with a warning."
+	"carpet.rule.ccuFakePlayerNames.extra.0": "Names must be valid Minecraft usernames: 3-16 chars of letters, digits and underscore. Invalid names are skipped with a warning.",
+
+	"carpet.rule.ccuCommandBatchPlayerAction.name": "ccuCommandBatchPlayerAction",
+	"carpet.rule.ccuCommandBatchPlayerAction.desc": "Enables /ccuplayer: run any /player action on a group of fake players. Values: false / true / ops / 0-4, same meaning as commandPlayer.",
+	"carpet.rule.ccuCommandBatchPlayerAction.extra.0": "Usage: /ccuplayer <name prefix|all> <action>, e.g. /ccuplayer bot use continuous, /ccuplayer bot jump, /ccuplayer all stop.",
+	"carpet.rule.ccuCommandBatchPlayerAction.extra.1": "Action syntax is parsed by Carpet's /player command, so every /player action works here too."
 }

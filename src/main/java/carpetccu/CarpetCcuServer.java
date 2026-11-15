@@ -4,7 +4,11 @@ import carpet.CarpetExtension;
 import carpet.CarpetServer;
 import carpet.api.settings.Rule;
 import carpet.utils.Translations;
+import carpetccu.command.BatchPlayerActionCommand;
 import carpetccu.feature.FakePlayerProfilePreloader;
+import com.mojang.brigadier.CommandDispatcher;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
@@ -28,6 +32,16 @@ public class CarpetCcuServer implements CarpetExtension {
 
 	private static final CarpetCcuServer INSTANCE = new CarpetCcuServer();
 
+	/**
+	 * 批量动作是否已成功并入 Carpet Org 的批量命令（避免每刻重复尝试）。
+	 */
+	private boolean commandsAttached = false;
+
+	/**
+	 * 挂载尝试次数上限，避免没装 Carpet Org 时每刻重复扫描命令树。
+	 */
+	private int attachAttempts = 0;
+
 	private CarpetCcuServer() {
 	}
 
@@ -48,6 +62,8 @@ public class CarpetCcuServer implements CarpetExtension {
 	@Override
 	public void onServerLoaded(MinecraftServer server) {
 		debug("服务器已加载");
+		// 命令树此时通常已建好（所有模组都注册完毕），把批量动作并进 Carpet Org 的批量命令
+		commandsAttached = BatchPlayerActionCommand.attachToBatchCommand(server) > 0;
 	}
 
 	@Override
@@ -61,6 +77,11 @@ public class CarpetCcuServer implements CarpetExtension {
 	public void onTick(MinecraftServer server) {
 		// 每游戏刻最先执行一次。后续按刻处理的功能写在这里，
 		// 注意它每 tick 都会跑，不要在这里做重活。
+		if (!commandsAttached && attachAttempts < 3) {
+			// 命令树可能晚于 onServerLoaded 建好，这里兜底重试几次（没装 Carpet Org 时不做无谓尝试）
+			attachAttempts++;
+			commandsAttached = BatchPlayerActionCommand.attachToBatchCommand(server) > 0;
+		}
 	}
 
 	@Override
@@ -81,6 +102,18 @@ public class CarpetCcuServer implements CarpetExtension {
 	@Override
 	public void onReload(MinecraftServer server) {
 		debug("服务器 /reload");
+		// 资源重载会重建命令树，需要重新挂载
+		BatchPlayerActionCommand.attachToBatchCommand(server);
+	}
+
+	// ---------------------------------------------------------------- 命令
+
+	/**
+	 * Carpet 会在注册完原版命令后回调这里，把本模组的命令挂上分发器。
+	 */
+	@Override
+	public void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext commandBuildContext) {
+		BatchPlayerActionCommand.register(dispatcher, commandBuildContext);
 	}
 
 	// ---------------------------------------------------------------- 元信息
