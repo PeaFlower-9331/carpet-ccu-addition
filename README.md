@@ -45,6 +45,7 @@
 | `minecartLoaderTypes` | string | `"minecart"` | CCU / 矿车 | 触发加载的矿车种类，逗号分隔 |
 | `minecartLoaderRails` | string | `"rail"` | CCU / 矿车 | 触发加载的铁轨种类，逗号分隔 |
 | `minecartLoaderRange` | int | `2` | CCU / 矿车 | 矿车周围保持加载的区块半径（1–32） |
+| `noAmethystBudInWater` | boolean | `false` | CCU | 紫水晶母岩不在相邻方格是水的面上生长紫水晶芽 |
 | `debugLog` | boolean | `false` | CCU | 输出详细生命周期日志，便于排查 |
 
 ## 命令

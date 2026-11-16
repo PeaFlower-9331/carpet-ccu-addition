@@ -48,6 +48,12 @@ group = project.maven_group
 version = "${project.mod_version}-mc${project.minecraft_version}"
 
 loom {
+	// 生成 refmap，保证正式环境（混淆运行）下 mixin 也能解析到目标方法
+	mixin {
+		useLegacyMixinAp = true
+		defaultRefmapName = 'carpet-ccu-addition.refmap.json'
+	}
+
 	// 各版本共用同一个 run 目录，方便换版本时复用存档与配置
 	runConfigs.configureEach {
 		runDir '../../run'

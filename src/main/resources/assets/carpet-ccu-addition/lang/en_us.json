@@ -41,4 +41,9 @@
 	"carpet.rule.minecartLoaderRange.name": "minecartLoaderRange",
 	"carpet.rule.minecartLoaderRange.desc": "Chunk radius kept loaded around the cart, 1-32, default 2.",
 	"carpet.rule.minecartLoaderRange.extra.0": "Cost grows with the square of the radius - keep it small."
+,
+
+	"carpet.rule.noAmethystBudInWater.name": "noAmethystBudInWater",
+	"carpet.rule.noAmethystBudInWater.desc": "Budding amethyst never grows amethyst buds on a face whose neighbouring block is water.",
+	"carpet.rule.noAmethystBudInWater.extra.0": "Only affects newly grown buds; existing buds and clusters are untouched."
 }

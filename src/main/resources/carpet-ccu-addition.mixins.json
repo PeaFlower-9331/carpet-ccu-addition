@@ -1,0 +1,12 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "com.ccu.addition.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"BuddingAmethystBlockMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

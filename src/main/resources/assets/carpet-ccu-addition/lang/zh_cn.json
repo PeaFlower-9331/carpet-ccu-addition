@@ -41,4 +41,9 @@
 	"carpet.rule.minecartLoaderRange.name": "minecartLoaderRange",
 	"carpet.rule.minecartLoaderRange.desc": "矿车周围保持加载的区块半径，取值 1-32，默认 2。",
 	"carpet.rule.minecartLoaderRange.extra.0": "覆盖区块数按半径平方增长，设太大很吃性能。"
+,
+
+	"carpet.rule.noAmethystBudInWater.name": "noAmethystBudInWater",
+	"carpet.rule.noAmethystBudInWater.desc": "紫水晶母岩不会在相邻方格是水的面上生长紫水晶芽。",
+	"carpet.rule.noAmethystBudInWater.extra.0": "只影响生成新芽；已经长出来的芽与簇不受影响。"
 }

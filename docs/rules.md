@@ -254,3 +254,14 @@ fakePlayerNames bot1,bot2,bot_farm
 1. `CcuRules` 加带 `@Rule` 的 `public static` 字段；
 2. `assets/carpet_ccu/lang/{en_us,zh_cn}.json` 补 `carpet.rule.<字段名>.name` / `.desc`；
 3. 在功能代码里读字段，并同步更新本文件。
+## 紫水晶芽
+
+分类：CCU。规则：
+oAmethystBudInWater（boolean，默认 alse）。
+
+开启后，紫水晶母岩**不会在相邻方格是水的面上生长紫水晶芽**。
+
+- 原版 BuddingAmethystBlock#canClusterGrowAtState 对「空气」与「水源方块」都返回 true，所以母岩会在水里长芽；
+  本规则在判定阶段直接对水返回 false。
+- 只影响**生成新芽**：已经长出来的芽、以及芽升级成更大的芽/簇，都不受影响。
+- 用 /carpet noAmethystBudInWater true 开关即可，无需重启。
