@@ -48,14 +48,15 @@ public final class CcuRules {
 	)
 	public static boolean debugLog = false;
 
+	/**
+	 * 用 {@code /player <名字> spawn} 召唤假人时，先把档案（UUID + 皮肤）异步预加载好，再真正召唤，
+	 * 避免召唤瞬间因查询档案而卡顿。
+	 */
 	@Rule(categories = {CCU, CCU_FAKE_PLAYER, RuleCategory.SURVIVAL, RuleCategory.FEATURE})
-	public static boolean fakePlayerProfilePreload = false;
-
-	@Rule(categories = {CCU, CCU_FAKE_PLAYER, RuleCategory.SURVIVAL, RuleCategory.FEATURE})
-	public static String fakePlayerNames = "";
+	public static boolean fakePlayerSpawnPreload = true;
 
 	/**
-	 * 控制 {@code /ccuplayer} 命令的可用级别，取值与 Carpet 的 {@code commandPlayer} 一致：
+	 * 控制批量假人动作命令的可用级别，取值与 Carpet 的 {@code commandPlayer} 一致：
 	 * false / true / ops / 0 / 1 / 2 / 3 / 4。
 	 */
 	@Rule(categories = {CCU, CCU_FAKE_PLAYER, RuleCategory.COMMAND})

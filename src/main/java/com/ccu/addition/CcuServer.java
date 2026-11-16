@@ -7,7 +7,6 @@ import carpet.utils.Translations;
 import com.ccu.addition.command.BatchPlayerActionCommand;
 import com.ccu.addition.command.LoadRangeCommand;
 import com.ccu.addition.feature.FakePlayerChunkLoader;
-import com.ccu.addition.feature.FakePlayerProfilePreloader;
 import com.ccu.addition.feature.MinecartChunkLoader;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -78,8 +77,6 @@ public class CcuServer implements CarpetExtension {
 	@Override
 	public void onServerLoadedWorlds(MinecraftServer server) {
 		debug("世界已加载");
-		// 假人档案预加载：把配置里的假人名登记进 usercache，供 /player 召唤时直接命中
-		FakePlayerProfilePreloader.preload(server);
 	}
 
 	@Override

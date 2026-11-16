@@ -37,8 +37,7 @@
 
 | 规则 | 类型 | 默认值 | 分类 | 说明 |
 | --- | --- | --- | --- | --- |
-| `fakePlayerProfilePreload` | boolean | `false` | CCU / 假人 | 启动时把 `fakePlayerNames` 登记进 `usercache`，`/player` 召唤同名假人不再查询 Mojang |
-| `fakePlayerNames` | string | `""` | CCU / 假人 | 要预加载档案的假人名字，逗号或空格分隔 |
+| `fakePlayerSpawnPreload` | boolean | `true` | CCU / 假人 | `/player <名字> spawn` 时先异步预加载档案再召唤，避免召唤卡顿 |
 | `commandBatchPlayerAction` | string | `"ops"` | CCU / 假人 / command | 批量假人动作命令的可用级别，取值同 `commandPlayer` |
 | `commandPlayerLoadRange` | string | `"ops"` | CCU / 假人 / command | 加载范围命令的可用级别，取值同 `commandPlayer` |
 | `minecartChunkLoader` | boolean | `false` | CCU / 矿车 | 矿车加载器总开关 |

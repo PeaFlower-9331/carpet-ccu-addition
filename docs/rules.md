@@ -5,8 +5,7 @@
 | 规则 | 类型 | 默认值 | 分类 | 说明 |
 | --- | --- | --- | --- | --- |
 | `debugLog` | boolean | `false` | CCU / creative / feature | 输出本模组的详细生命周期日志，仅影响日志详细程度 |
-| `fakePlayerProfilePreload` | boolean | `false` | CCU / CCU_fake_player / survival / feature | 服务器启动时预加载假人档案 |
-| `fakePlayerNames` | string | `""` | CCU / CCU_fake_player / survival / feature | 要预加载的假人名字，逗号或空格分隔 |
+| `fakePlayerSpawnPreload` | boolean | `true` | CCU / CCU_fake_player / survival / feature | 召唤假人时先异步预加载档案再召唤，避免卡顿 |
 | `commandBatchPlayerAction` | string | `"ops"` | CCU / CCU_fake_player / command | `batch action` 的可用级别，取值同 `commandPlayer` |
 | `commandPlayerLoadRange` | string | `"ops"` | CCU / CCU_fake_player / command | `/player <名字> load` 的可用级别，取值同 `commandPlayer` |
 
@@ -194,61 +193,38 @@ minecartLoaderRange 8
   既复用了 Carpet 的全部语法与校验，也自动跟随 Carpet 后续新增的动作。
 - 若服务器关闭了 Carpet 的 `commandPlayer` 规则，本命令会报“未知命令”，错误信息里会给出提示。
 
-## 假人档案预加载
+## 假人召唤预加载
 
 ### 它解决什么问题
 
-Carpet 的 `/player <名字> spawn` 创建假人时，先用名字确定 UUID
-（`OldUsersConverter.convertMobOwnerIfNecessary`，内部读 `usercache`），再解析玩家档案拿皮肤。
+Carpet 的 `/player <名字> spawn` 在真正创建假人前要先解析玩家档案（UUID + 皮肤）。名字没缓存时会走一次网络查询，
+这段时间就是「召唤时卡一下」的来源。
 
-- 名字在 `usercache.json` 里没有记录时，**正版验证开启**（`online-mode=true`）的服务器拿不到 UUID，假人直接召不出来；
-- 即使召出来，也要现场向 Mojang 查一次档案，网络不好时会卡住甚至失败。
+本规则把这一步拆成两段：
 
-预加载就是把假人的「名字 → UUID」提前写进 `usercache.json`，让之后召唤时直接命中。
+1. 收到召唤请求后立刻返回，**先在后台线程**把该玩家的档案解析好；
+2. 解析完成（成功或失败）后回到服务器线程，再执行真正的召唤——此时 Carpet 查档案已经是缓存命中。
 
 ### 怎么用
 
 ```bash
-# 1. 写名字列表（逗号或空格分隔）
-/carpet fakePlayerNames bot1,bot2,bot_farm
-
-# 2. 打开开关
-/carpet fakePlayerProfilePreload true
-
-# 3. 重启服务器（规则只在启动时生效）
+/carpet fakePlayerSpawnPreload true   # 默认就是 true
 ```
 
-重启后日志会给出结果：
-
-```
-[CarpetCCU] 假人档案预加载完成：新增 3，已存在 0，非法 0（共 3 个名字）
-```
-
-之后 `/player bot1 spawn` 即可直接召唤。
-
-也可以直接写进 `world/carpet.conf`：
-
-```conf
-fakePlayerProfilePreload true
-fakePlayerNames bot1,bot2,bot_farm
-```
+之后照常用 `/player bot1 spawn` 即可，不需要预先配置名字列表。
 
 ### 行为细节
 
 | 情况 | 处理 |
 | --- | --- |
-| 名字已在 `usercache.json` | 原样保留，不改它的 UUID 与皮肤 |
-| 名字不在缓存 | 按离线 UUID 生成（`OfflinePlayer:<名字>` 的 MD5 v3），写入并立即落盘 |
-| 名字非法（非 3-16 位，或含字母数字下划线以外的字符） | 跳过，打一条警告 |
-| 列表里大小写重复（`Bot1` / `bot1`） | 只保留第一次出现的形式 |
+| 第一次召唤某个名字 | 命令立刻返回，档案解析完成后才真正召唤（通常 1 秒内） |
+| 同一名字再次召唤 | 已预加载过，直接走 Carpet 原流程，不再拆分 |
+| 档案解析失败（断网 / 离线服务器） | 仍然正常召唤，退回离线档案，只是没有皮肤 |
+| 关闭规则 | 完全恢复 Carpet 原本的召唤流程 |
 
-- **只读本地文件，不联网**：判断“是否已存在”是直接读 `usercache.json`，不会调用
-  `UserNameToIdResolver#get(String)`——那个方法未命中时会向 Mojang 发起查询，断网或网络受限的服务器会卡在启动阶段。
-- **UUID 可复现**：离线 UUID 只由名字决定，换机器、重启都不会变，适合挂机/商店/权限等按 UUID 记录的场景。
-- 预加载写入的是**离线 UUID**。如果该名字是真实正版账号且你希望用正版 UUID，请让该账号先登录一次
-  （或直接用 `/player` 让它自己解析），预加载会识别到已有记录并跳过。
-- 运行期修改规则或名字列表不会立即生效，需要重启服务器。
-
+- 只影响**召唤时机**，不改变假人的 UUID、皮肤、权限等任何数据。
+- 预加载在后台线程执行，不会阻塞服务器刻。
+- 想确认效果可以打开 `debugLog`，日志里会记录预加载失败的个例（不影响召唤）。
 ## 加规则的三步
 
 1. `CcuRules` 加带 `@Rule` 的 `public static` 字段；

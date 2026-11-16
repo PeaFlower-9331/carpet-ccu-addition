@@ -37,8 +37,7 @@ All rules live in Carpet's main settings manager: `/carpet <rule> <value>`. Cate
 
 | Rule | Type | Default | Category | Description |
 | --- | --- | --- | --- | --- |
-| `fakePlayerProfilePreload` | boolean | `false` | CCU / fake_player | Registers `fakePlayerNames` into `usercache` on start, so `/player` spawning needs no Mojang lookup |
-| `fakePlayerNames` | string | `""` | CCU / fake_player | Names to preload, comma or space separated |
+| `fakePlayerSpawnPreload` | boolean | `true` | CCU / fake_player | `/player <name> spawn` preloads the profile asynchronously before spawning, avoiding a stall |
 | `commandBatchPlayerAction` | string | `"ops"` | CCU / fake_player / command | Permission level of the batch action command, same values as `commandPlayer` |
 | `commandPlayerLoadRange` | string | `"ops"` | CCU / fake_player / command | Permission level of the load range command, same values as `commandPlayer` |
 | `minecartChunkLoader` | boolean | `false` | CCU / minecart | Master switch of the minecart chunk loader |

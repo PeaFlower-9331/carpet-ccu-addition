@@ -2,47 +2,32 @@
 	"carpet.category.CCU": "CCU",
 	"carpet.category.CCU_fake_player": "假人",
 	"carpet.category.CCU_minecart": "矿车",
-
 	"carpet.rule.debugLog.name": "debugLog",
 	"carpet.rule.debugLog.desc": "输出本模组的详细生命周期日志，便于排查问题。",
 	"carpet.rule.debugLog.extra.0": "只影响日志详细程度，不影响游戏行为。",
-
-	"carpet.rule.fakePlayerProfilePreload.name": "fakePlayerProfilePreload",
-	"carpet.rule.fakePlayerProfilePreload.desc": "服务器启动时预加载假人档案：把 fakePlayerNames 里的名字登记进 usercache，之后 /player 召唤同名假人时无需再向 Mojang 查询。",
-	"carpet.rule.fakePlayerProfilePreload.extra.0": "已有档案的名字保持原 UUID 与皮肤不变；没有档案的按离线 UUID 生成，重启后保持不变。",
-	"carpet.rule.fakePlayerProfilePreload.extra.1": "仅影响之后召唤的假人，不会影响已经在线的玩家。",
-	"carpet.rule.fakePlayerProfilePreload.extra.2": "改动本规则或名字列表后需要重启服务器才会生效。",
-
-	"carpet.rule.fakePlayerNames.name": "fakePlayerNames",
-	"carpet.rule.fakePlayerNames.desc": "要预加载档案的假人名字列表，用逗号或空格分隔，例如 bot1,bot2,bot3。",
-	"carpet.rule.fakePlayerNames.extra.0": "名字需符合 Minecraft 用户名规则：3-16 位，只能包含字母、数字与下划线，非法名字会被跳过并记录警告。",
-
+	"carpet.rule.fakePlayerSpawnPreload.name": "fakePlayerSpawnPreload",
+	"carpet.rule.fakePlayerSpawnPreload.desc": "用 /player <名字> spawn 召唤假人时，先异步预加载该玩家的档案（UUID + 皮肤），再执行召唤，避免召唤瞬间卡顿。",
+	"carpet.rule.fakePlayerSpawnPreload.extra.0": "同一个名字只预加载一次；解析失败时仍会正常召唤（退回离线档案）。",
+	"carpet.rule.fakePlayerSpawnPreload.extra.1": "关闭后恢复 Carpet 原本的召唤流程。",
 	"carpet.rule.commandBatchPlayerAction.name": "commandBatchPlayerAction",
 	"carpet.rule.commandBatchPlayerAction.desc": "开启批量假人动作：在 Carpet Org Addition 的批量命令下提供 action 子命令，对一批假人执行任意 /player 动作。取值 false / true / ops / 0-4，含义与 commandPlayer 相同。",
 	"carpet.rule.commandBatchPlayerAction.extra.0": "用法：/playerManager batch action <名字前缀|all> <动作>，例如 use continuous（批量连续右键）、jump（批量跳）、stop。",
 	"carpet.rule.commandBatchPlayerAction.extra.1": "动作语法完全交给 Carpet 的 /player 解析，因此 /player 支持的动作这里都能用。",
-
 	"carpet.rule.commandPlayerLoadRange.name": "commandPlayerLoadRange",
 	"carpet.rule.commandPlayerLoadRange.desc": "开启加载范围命令：/player <假人名> load [半径|default]，给单个假人调大加载范围（区块数）。只能调大，无法小于服务器视距。取值 false / true / ops / 0-4，含义与 commandPlayer 相同。",
 	"carpet.rule.commandPlayerLoadRange.extra.0": "例如 /player bot1 load 8；/player bot1 load default 恢复成跟随服务器视距。",
 	"carpet.rule.commandPlayerLoadRange.extra.1": "未设置的假人不额外加载，行为与原版一致。半径不大于服务器视距时不会产生额外效果（原版 ticket 压不下去）。",
-
 	"carpet.rule.minecartChunkLoader.name": "minecartChunkLoader",
 	"carpet.rule.minecartChunkLoader.desc": "开启矿车加载器：指定种类的矿车停在指定种类的铁轨上时，每 5 秒给它周围的区块挂一次加载票，保持加载与实体刻。",
 	"carpet.rule.minecartChunkLoader.extra.0": "还需配合 minecartLoaderTypes（矿车种类）、minecartLoaderRails（铁轨种类）、minecartLoaderRange（半径）。",
 	"carpet.rule.minecartChunkLoader.extra.1": "加载票 5 秒后过期：矿车开走、离开铁轨或消失后，最多 5 秒自动卸载，不会留下残留。",
-
 	"carpet.rule.minecartLoaderTypes.name": "minecartLoaderTypes",
 	"carpet.rule.minecartLoaderTypes.desc": "触发加载的矿车种类，逗号分隔，可省略 minecraft: 前缀，例如 minecart,chest_minecart,hopper_minecart。",
-
 	"carpet.rule.minecartLoaderRails.name": "minecartLoaderRails",
 	"carpet.rule.minecartLoaderRails.desc": "触发加载的铁轨种类，逗号分隔，例如 rail,powered_rail,detector_rail,activator_rail。",
-
 	"carpet.rule.minecartLoaderRange.name": "minecartLoaderRange",
 	"carpet.rule.minecartLoaderRange.desc": "矿车周围保持加载的区块半径，取值 1-32，默认 2。",
-	"carpet.rule.minecartLoaderRange.extra.0": "覆盖区块数按半径平方增长，设太大很吃性能。"
-,
-
+	"carpet.rule.minecartLoaderRange.extra.0": "覆盖区块数按半径平方增长，设太大很吃性能。",
 	"carpet.rule.noAmethystBudInWater.name": "noAmethystBudInWater",
 	"carpet.rule.noAmethystBudInWater.desc": "紫水晶母岩不会在相邻方格是水的面上生长紫水晶芽。",
 	"carpet.rule.noAmethystBudInWater.extra.0": "只影响生成新芽；已经长出来的芽与簇不受影响。"
