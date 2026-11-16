@@ -28,29 +28,19 @@ import java.util.UUID;
 /**
  * 假人加载范围（额外区块 ticket）。
  *
- * <p>背景：原版里玩家（包括假人）周围加载多少区块是由<strong>服务器视距</strong>统一决定的，
- * 没有按玩家单独设置的入口。所以这里换一种做法：给指定假人额外挂一个
- * {@link TicketType} 的区块 ticket，把它周围 {@code 半径} 个区块强制保持在「实体刻」状态
- * （{@code ChunkLevel.byStatus(FULL)=33}，ticket 等级换算见下），未设定的假人则不加，
- * 维持原版视距的行为。</p>
+ * <p>原版对玩家（含假人）的区块加载半径由<strong>服务器视距 / 模拟距离统一决定</strong>，
+ * 没有按玩家单独配置的入口；而区块 ticket 只能叠加、不能抵消。因此本功能<strong>只能调大</strong>：
+ * 给指定假人额外挂一个 ticket，把它周围 {@code 半径} 个区块强制保持加载并参与实体刻；
+ * 未设置的假人不加任何 ticket，行为与原版完全一致。</p>
  *
- * <p>ticket 等级换算：{@code TicketStorage#addTicketWithRadius(type, pos, r)} 会创建
- * {@code level = 33 - r} 的 ticket，而 ticket 等级每远一个区块 +1；实体刻要求等级 ≤ 31，
- * 因此想让半径 {@code R} 内的区块都实体刻，需要传 {@code r = R + 2}。</p>
+ * <p>把半径设成小于等于服务器视距没有意义——原版那部分 ticket 依然存在，压不下去，
+ * 所以命令在遇到这种取值时会给出提示。</p>
  *
- * <p>注意：</p>
- * <ul>
- *     <li>本功能只能<strong>扩大</strong>加载范围。原版对玩家本身就有视距范围内的 ticket，
- *     所以设置值小于等于服务器视距时，效果等同未设置（无法缩小）。</li>
- *     <li>ticket 类型不带 {@code FLAG_PERSIST}，重启后不会残留在存档里。</li>
- *     <li>设置按假人名字保存，假人重新召唤后依然生效。</li>
- * </ul>
+ * <p>ticket 等级换算：{@code addTicketWithRadius(type, pos, r)} 创建 {@code level = 33 - r} 的 ticket，
+ * 每远一个区块 +1，实体刻要求等级 ≤ 31，故「半径 R 内实体刻」传 {@code r = R + 2}。</p>
  */
 public final class FakePlayerChunkLoader {
 
-	/**
-	 * 自定义 ticket 类型：加载 + 模拟，不持久化。
-	 */
 	private static final TicketType CCU_FAKE_PLAYER_TICKET = new TicketType(
 			TicketType.NO_TIMEOUT,
 			TicketType.FLAG_LOADING | TicketType.FLAG_SIMULATION
@@ -62,14 +52,14 @@ public final class FakePlayerChunkLoader {
 	public static final int MAX_RADIUS = 32;
 
 	/**
-	 * 每 20 刻检查一次位置变化，避免每刻都动 ticket。
+	 * 每 20 刻对账一次。
 	 */
 	private static final int CHECK_INTERVAL = 20;
 
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
 	/**
-	 * 假人名字（小写） -> 额外加载半径（区块）。
+	 * 假人名字（小写） -> 加载半径（区块）。
 	 */
 	private static final Map<String, Integer> RANGES = new HashMap<>();
 
@@ -81,9 +71,6 @@ public final class FakePlayerChunkLoader {
 	private FakePlayerChunkLoader() {
 	}
 
-	/**
-	 * 某个假人当前生效的 ticket 记录。
-	 */
 	private record Applied(ResourceKey<Level> dimension, ChunkPos pos, int radius) {
 	}
 
@@ -103,8 +90,7 @@ public final class FakePlayerChunkLoader {
 			return;
 		}
 		try {
-			String content = Files.readString(path, StandardCharsets.UTF_8);
-			JsonObject json = JsonParser.parseString(content).getAsJsonObject();
+			JsonObject json = JsonParser.parseString(Files.readString(path, StandardCharsets.UTF_8)).getAsJsonObject();
 			for (Map.Entry<String, JsonElement> entry : json.entrySet()) {
 				int radius = entry.getValue().getAsInt();
 				if (radius > 0) {
@@ -131,7 +117,7 @@ public final class FakePlayerChunkLoader {
 	/**
 	 * 设置某个假人的额外加载半径。
 	 *
-	 * @param radius 0 或负数表示恢复默认（不再额外加载）
+	 * @param radius 0 或负数表示清除设置（恢复成原版视距，不再额外加载）
 	 * @return 之前的设置值（0 表示之前未设置）
 	 */
 	public static int setRange(String name, int radius) {
@@ -168,11 +154,11 @@ public final class FakePlayerChunkLoader {
 			return;
 		}
 
-		// 1. 给在线假人维持 ticket
 		for (ServerPlayer player : server.getPlayerList().getPlayers()) {
 			if (!(player instanceof EntityPlayerMPFake)) {
 				continue;
 			}
+
 			int wanted = getRange(player.getScoreboardName());
 			UUID id = player.getUUID();
 			Applied current = APPLIED.get(id);
@@ -199,7 +185,7 @@ public final class FakePlayerChunkLoader {
 			APPLIED.put(id, new Applied(dimension, pos, wanted));
 		}
 
-		// 2. 清理已经下线/被移除的假人
+		// 清理已经下线/被移除的假人
 		Iterator<Map.Entry<UUID, Applied>> iterator = APPLIED.entrySet().iterator();
 		while (iterator.hasNext()) {
 			Map.Entry<UUID, Applied> entry = iterator.next();

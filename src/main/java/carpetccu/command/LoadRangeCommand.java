@@ -66,8 +66,8 @@ public final class LoadRangeCommand {
 		String raw = StringArgumentType.getString(context, "radius").strip();
 
 		int radius;
-		if (raw.equalsIgnoreCase("default") || raw.equals("0") || raw.equals("-1")) {
-			radius = 0;
+		if (raw.equalsIgnoreCase("default") || raw.equals("-1")) {
+			radius = -1;
 		} else {
 			try {
 				radius = Integer.parseInt(raw);
@@ -84,9 +84,15 @@ public final class LoadRangeCommand {
 		int previous = FakePlayerChunkLoader.setRange(target, radius);
 
 		boolean online = source.getServer().getPlayerList().getPlayerByName(target) instanceof EntityPlayerMPFake;
-		if (radius <= 0) {
-			source.sendSuccess(() -> Component.literal("已恢复 " + target + " 的默认加载范围（跟随服务器视距，之前是 "
-					+ previous + " 区块）"), true);
+		int viewDistance = source.getServer().getPlayerList().getViewDistance();
+		if (radius < 0) {
+			source.sendSuccess(() -> Component.literal("已恢复 " + target + " 的默认加载范围（跟随服务器视距"
+					+ (previous > 0 ? "，之前是 " + previous + " 区块" : "") + "）"), true);
+		} else if (radius <= viewDistance) {
+			// 本功能只能调大：小于等于服务器视距时原版 ticket 依然覆盖，加不加都一样
+			source.sendSuccess(() -> Component.literal("已记录 " + target + " 的加载范围为 " + radius
+					+ " 区块，但它不大于服务器视距（" + viewDistance + "），实际不会有额外效果"
+					+ "（本功能只能调大，无法缩小）"), true);
 		} else {
 			source.sendSuccess(() -> Component.literal("已设置 " + target + " 的额外加载范围为 " + radius + " 区块"
 					+ (online ? "（已生效）" : "（该假人未在线，召唤后自动生效）")), true);

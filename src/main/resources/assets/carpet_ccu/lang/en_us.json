@@ -22,7 +22,7 @@
 	"carpet.rule.ccuCommandBatchPlayerAction.extra.1": "Action syntax is parsed by Carpet's /player command, so every /player action works here too.",
 
 	"carpet.rule.ccuCommandPlayerLoadRange.name": "ccuCommandPlayerLoadRange",
-	"carpet.rule.ccuCommandPlayerLoadRange.desc": "Enables /ccuload: give a single fake player its own loading range (in chunks). Values: false / true / ops / 0-4, same meaning as commandPlayer.",
+	"carpet.rule.ccuCommandPlayerLoadRange.desc": "Enables /ccuload: enlarge a single fake player's chunk loading range. Enlarge only - it can never go below the server view distance. Values: false / true / ops / 0-4, same meaning as commandPlayer.",
 	"carpet.rule.ccuCommandPlayerLoadRange.extra.0": "Usage: /ccuload <bot name> <radius|default>, e.g. /ccuload bot1 8; default restores the server view distance behaviour.",
-	"carpet.rule.ccuCommandPlayerLoadRange.extra.1": "Bots without a setting load chunks exactly like vanilla. The setting can only extend the range, never shrink it below the server view distance."
+	"carpet.rule.ccuCommandPlayerLoadRange.extra.1": "Bots without a setting load chunks exactly like vanilla. A radius not larger than the server view distance has no extra effect, because vanilla tickets cannot be cancelled."
 }
