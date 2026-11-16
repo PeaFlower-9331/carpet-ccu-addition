@@ -24,5 +24,22 @@
 	"carpet.rule.ccuCommandPlayerLoadRange.name": "ccuCommandPlayerLoadRange",
 	"carpet.rule.ccuCommandPlayerLoadRange.desc": "开启 /ccuload 命令：给某个假人调大加载范围（区块数）。只能调大，无法小于服务器视距。取值 false / true / ops / 0-4，含义与 commandPlayer 相同。",
 	"carpet.rule.ccuCommandPlayerLoadRange.extra.0": "用法：/ccuload <假人名> <半径|default>，例如 /ccuload bot1 8；default 恢复成跟随服务器视距。",
-	"carpet.rule.ccuCommandPlayerLoadRange.extra.1": "未设置的假人不额外加载，行为与原版一致。半径不大于服务器视距时不会产生额外效果（原版 ticket 压不下去）。"
+	"carpet.rule.ccuCommandPlayerLoadRange.extra.1": "未设置的假人不额外加载，行为与原版一致。半径不大于服务器视距时不会产生额外效果（原版 ticket 压不下去）。",
+
+	"carpet.category.CCU_minecart": "矿车",
+
+	"carpet.rule.ccuMinecartChunkLoader.name": "ccuMinecartChunkLoader",
+	"carpet.rule.ccuMinecartChunkLoader.desc": "开启矿车加载器：指定种类的矿车停在指定种类的铁轨上时，每 5 秒给它周围的区块挂一次加载票，保持加载与实体刻。",
+	"carpet.rule.ccuMinecartChunkLoader.extra.0": "还需配合 ccuMinecartLoaderTypes（矿车种类）、ccuMinecartLoaderRails（铁轨种类）、ccuMinecartLoaderRange（半径）。",
+	"carpet.rule.ccuMinecartChunkLoader.extra.1": "加载票 5 秒后过期：矿车开走、离开铁轨或消失后，最多 5 秒自动卸载，不会留下残留。",
+
+	"carpet.rule.ccuMinecartLoaderTypes.name": "ccuMinecartLoaderTypes",
+	"carpet.rule.ccuMinecartLoaderTypes.desc": "触发加载的矿车种类，逗号分隔，可省略 minecraft: 前缀，例如 minecart,chest_minecart,hopper_minecart。",
+
+	"carpet.rule.ccuMinecartLoaderRails.name": "ccuMinecartLoaderRails",
+	"carpet.rule.ccuMinecartLoaderRails.desc": "触发加载的铁轨种类，逗号分隔，例如 rail,powered_rail,detector_rail,activator_rail。",
+
+	"carpet.rule.ccuMinecartLoaderRange.name": "ccuMinecartLoaderRange",
+	"carpet.rule.ccuMinecartLoaderRange.desc": "矿车周围保持加载的区块半径，取值 1-32，默认 2。",
+	"carpet.rule.ccuMinecartLoaderRange.extra.0": "覆盖区块数按半径平方增长，设太大很吃性能。"
 }

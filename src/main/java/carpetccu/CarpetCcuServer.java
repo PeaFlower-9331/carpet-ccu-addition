@@ -8,6 +8,7 @@ import carpetccu.command.BatchPlayerActionCommand;
 import carpetccu.command.LoadRangeCommand;
 import carpetccu.feature.FakePlayerChunkLoader;
 import carpetccu.feature.FakePlayerProfilePreloader;
+import carpetccu.feature.MinecartChunkLoader;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -98,6 +99,8 @@ public class CarpetCcuServer implements CarpetExtension {
 		}
 		// 假人加载范围：按配置给假人维持区块 ticket（内部每 20 刻对账一次）
 		FakePlayerChunkLoader.tick(server);
+		// 矿车加载器：每 5 秒给符合条件的矿车续一次加载票
+		MinecartChunkLoader.tick(server);
 	}
 
 	@Override

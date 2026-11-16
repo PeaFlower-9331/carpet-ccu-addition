@@ -63,6 +63,49 @@ TicketType(CCU, 不持久化, 加载 + 模拟)
 | 开销 | 半径每 +1，ticket 覆盖的区块按平方增长，32 区块 ≈ 4000+ 区块，注意服务器性能 |
 | 生效延迟 | 新区块需要生成，半径较大时第一次生效可能要几秒到十几秒 |
 
+## 矿车加载器
+
+分类：`CCU` / `矿车`（`CCU_minecart`）。`/carpet list CCU_minecart` 可单独筛选。
+
+指定种类的矿车停在指定种类的铁轨上时，**每 5 秒**给周围区块续一次加载票，保持加载与实体刻。
+
+### 规则
+
+| 规则 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `ccuMinecartChunkLoader` | boolean | `false` | 总开关 |
+| `ccuMinecartLoaderTypes` | string | `"minecart"` | 触发加载的矿车种类，逗号分隔，可省略 `minecraft:` 前缀 |
+| `ccuMinecartLoaderRails` | string | `"rail"` | 触发加载的铁轨种类，逗号分隔，同上 |
+| `ccuMinecartLoaderRange` | int | `2` | 半径（区块），取值 1–32 |
+
+### 示例
+
+写进 `world/carpet.conf`：
+
+```conf
+ccuMinecartChunkLoader true
+ccuMinecartLoaderTypes minecart,chest_minecart
+ccuMinecartLoaderRails rail,powered_rail
+ccuMinecartLoaderRange 8
+```
+
+也可以在游戏里逐条设：
+
+```
+/carpet ccuMinecartLoaderTypes minecart,chest_minecart
+/carpet ccuMinecartLoaderRails rail,powered_rail
+/carpet ccuMinecartLoaderRange 8
+/carpet ccuMinecartChunkLoader true
+```
+
+### 行为
+
+- 每 5 秒（100 刻）扫描一次**已加载**实体：矿车类型命中、且脚下或所在位置是配置的某种铁轨，就给它所在区块挂一次加载票。
+- 加载票自带 **5 秒超时**（`TicketType` timeout=100 刻，且不持久化）：重复挂票会刷新超时；矿车开走、离开铁轨或被清除后，**最多 5 秒**自动卸载，不会在存档里留下残留。
+- 只扫描已加载区块中的矿车，不会为了找车而强行加载区块；也不会影响矿车原本的行为。
+- 矿车移动后旧区块的票不会立刻撤销，最多多残留 5 秒。
+- 半径换算：`addTicketWithRadius(type, pos, R + 2)`，保证半径 R 内的区块处于实体刻状态。
+
 ## 批量假人动作
 
 ### 命令

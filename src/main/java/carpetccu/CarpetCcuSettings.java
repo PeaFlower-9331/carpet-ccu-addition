@@ -33,6 +33,11 @@ public final class CarpetCcuSettings {
 	 */
 	public static final String CCU_FAKE_PLAYER = "CCU_fake_player";
 
+	/**
+	 * 矿车加载器规则的子分类，{@code /carpet list CCU_minecart} 可单独筛选。
+	 */
+	public static final String CCU_MINECART = "CCU_minecart";
+
 	private CarpetCcuSettings() {
 	}
 
@@ -61,4 +66,18 @@ public final class CarpetCcuSettings {
 	 */
 	@Rule(categories = {CCU, CCU_FAKE_PLAYER, RuleCategory.COMMAND})
 	public static String ccuCommandPlayerLoadRange = "ops";
+
+	// ---------------------------------------------------------------- 矿车加载器
+
+	@Rule(categories = {CCU, CCU_MINECART, RuleCategory.FEATURE, RuleCategory.CREATIVE})
+	public static boolean ccuMinecartChunkLoader = false;
+
+	@Rule(categories = {CCU, CCU_MINECART, RuleCategory.FEATURE, RuleCategory.CREATIVE})
+	public static String ccuMinecartLoaderTypes = "minecart";
+
+	@Rule(categories = {CCU, CCU_MINECART, RuleCategory.FEATURE, RuleCategory.CREATIVE})
+	public static String ccuMinecartLoaderRails = "rail";
+
+	@Rule(categories = {CCU, CCU_MINECART, RuleCategory.FEATURE, RuleCategory.CREATIVE})
+	public static int ccuMinecartLoaderRange = 2;
 }

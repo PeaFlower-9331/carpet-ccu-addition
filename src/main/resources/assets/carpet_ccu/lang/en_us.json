@@ -24,5 +24,22 @@
 	"carpet.rule.ccuCommandPlayerLoadRange.name": "ccuCommandPlayerLoadRange",
 	"carpet.rule.ccuCommandPlayerLoadRange.desc": "Enables /ccuload: enlarge a single fake player's chunk loading range. Enlarge only - it can never go below the server view distance. Values: false / true / ops / 0-4, same meaning as commandPlayer.",
 	"carpet.rule.ccuCommandPlayerLoadRange.extra.0": "Usage: /ccuload <bot name> <radius|default>, e.g. /ccuload bot1 8; default restores the server view distance behaviour.",
-	"carpet.rule.ccuCommandPlayerLoadRange.extra.1": "Bots without a setting load chunks exactly like vanilla. A radius not larger than the server view distance has no extra effect, because vanilla tickets cannot be cancelled."
+	"carpet.rule.ccuCommandPlayerLoadRange.extra.1": "Bots without a setting load chunks exactly like vanilla. A radius not larger than the server view distance has no extra effect, because vanilla tickets cannot be cancelled.",
+
+	"carpet.category.CCU_minecart": "minecart",
+
+	"carpet.rule.ccuMinecartChunkLoader.name": "ccuMinecartChunkLoader",
+	"carpet.rule.ccuMinecartChunkLoader.desc": "Enables the minecart chunk loader: a matching minecart standing on a matching rail gets a loading ticket every 5 seconds, keeping the surrounding chunks loaded and ticking.",
+	"carpet.rule.ccuMinecartChunkLoader.extra.0": "Configure ccuMinecartLoaderTypes (cart types), ccuMinecartLoaderRails (rail types) and ccuMinecartLoaderRange (radius).",
+	"carpet.rule.ccuMinecartChunkLoader.extra.1": "Tickets expire after 5 seconds: once the cart leaves the rail or disappears, chunks unload within 5 seconds - nothing persists.",
+
+	"carpet.rule.ccuMinecartLoaderTypes.name": "ccuMinecartLoaderTypes",
+	"carpet.rule.ccuMinecartLoaderTypes.desc": "Comma separated minecart types that trigger loading, e.g. minecart,chest_minecart,hopper_minecart. The minecraft: prefix is optional.",
+
+	"carpet.rule.ccuMinecartLoaderRails.name": "ccuMinecartLoaderRails",
+	"carpet.rule.ccuMinecartLoaderRails.desc": "Comma separated rail blocks that trigger loading, e.g. rail,powered_rail,detector_rail,activator_rail.",
+
+	"carpet.rule.ccuMinecartLoaderRange.name": "ccuMinecartLoaderRange",
+	"carpet.rule.ccuMinecartLoaderRange.desc": "Chunk radius kept loaded around the cart, 1-32, default 2.",
+	"carpet.rule.ccuMinecartLoaderRange.extra.0": "Cost grows with the square of the radius - keep it small."
 }

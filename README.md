@@ -13,6 +13,7 @@
 | `ccuFakePlayerProfilePreload` + `ccuFakePlayerNames` | 假人档案预加载：启动时把假人名字登记进 `usercache.json`，`/player <名字> spawn` 直接命中，不再依赖 Mojang 查询 |
 | `ccuCommandBatchPlayerAction` | 批量假人动作：`/playerManager batch action <目标> <动作>`（并入 Carpet Org Addition）或独立的 `/ccuplayer`；动作列表由 `/player` 命令树实时生成，可用 `/player` 的全部动作（背包/末影箱查看除外） |
 | `ccuCommandPlayerLoadRange` | 假人加载范围：`/player <假人名> load <半径\|default>`（并入 Carpet 的 `/player`），把单个假人的加载范围**调大**（只能调大，不能缩小到服务器视距以下）；等价独立命令 `/ccuload` |
+| `ccuMinecartChunkLoader` 等 4 条 | 矿车加载器：指定种类的矿车停在指定种类铁轨上时，每 5 秒给周围区块续一次加载票，票 5 秒过期、不残留 |
 | `ccuDebugLog` | 输出本模组生命周期详细日志，便于排查 |
 
 详见 [docs/rules.md](docs/rules.md)。
