@@ -1,0 +1,44 @@
+{
+	"carpet.category.CCU": "CCU",
+	"carpet.category.CCU_fake_player": "fake_player",
+	"carpet.category.CCU_minecart": "minecart",
+
+	"carpet.rule.debugLog.name": "debugLog",
+	"carpet.rule.debugLog.desc": "Outputs verbose lifecycle logs of this mod, for debugging.",
+	"carpet.rule.debugLog.extra.0": "Only changes log verbosity; no gameplay effect.",
+
+	"carpet.rule.fakePlayerProfilePreload.name": "fakePlayerProfilePreload",
+	"carpet.rule.fakePlayerProfilePreload.desc": "Preloads fake player profiles on server start: registers every name in fakePlayerNames into usercache, so spawning a bot with /player no longer needs a Mojang lookup.",
+	"carpet.rule.fakePlayerProfilePreload.extra.0": "Names that already have a profile keep their UUID and skin; unknown names get a deterministic offline UUID that survives restarts.",
+	"carpet.rule.fakePlayerProfilePreload.extra.1": "Only affects bots spawned afterwards, never online players.",
+	"carpet.rule.fakePlayerProfilePreload.extra.2": "Changing this rule or the name list requires a server restart.",
+
+	"carpet.rule.fakePlayerNames.name": "fakePlayerNames",
+	"carpet.rule.fakePlayerNames.desc": "Comma or space separated fake player names to preload, e.g. bot1,bot2,bot3.",
+	"carpet.rule.fakePlayerNames.extra.0": "Names must be valid Minecraft usernames: 3-16 chars of letters, digits and underscore. Invalid names are skipped with a warning.",
+
+	"carpet.rule.commandBatchPlayerAction.name": "commandBatchPlayerAction",
+	"carpet.rule.commandBatchPlayerAction.desc": "Enables batch fake player actions: adds an action subcommand under Carpet Org Addition's batch command, running any /player action on a group of bots. Values: false / true / ops / 0-4, same meaning as commandPlayer.",
+	"carpet.rule.commandBatchPlayerAction.extra.0": "Usage: /playerManager batch action <name prefix|all> <action>, e.g. use continuous, jump, stop.",
+	"carpet.rule.commandBatchPlayerAction.extra.1": "Action syntax is parsed by Carpet's /player command, so every /player action works here too.",
+
+	"carpet.rule.commandPlayerLoadRange.name": "commandPlayerLoadRange",
+	"carpet.rule.commandPlayerLoadRange.desc": "Enables the load range command: /player <bot> load [radius|default], enlarging a single fake player's chunk loading range. Enlarge only - it can never go below the server view distance. Values: false / true / ops / 0-4, same meaning as commandPlayer.",
+	"carpet.rule.commandPlayerLoadRange.extra.0": "For example /player bot1 load 8; /player bot1 load default restores the server view distance behaviour.",
+	"carpet.rule.commandPlayerLoadRange.extra.1": "Bots without a setting load chunks exactly like vanilla. A radius not larger than the server view distance has no extra effect, because vanilla tickets cannot be cancelled.",
+
+	"carpet.rule.minecartChunkLoader.name": "minecartChunkLoader",
+	"carpet.rule.minecartChunkLoader.desc": "Enables the minecart chunk loader: a matching minecart standing on a matching rail gets a loading ticket every 5 seconds, keeping the surrounding chunks loaded and ticking.",
+	"carpet.rule.minecartChunkLoader.extra.0": "Configure minecartLoaderTypes (cart types), minecartLoaderRails (rail types) and minecartLoaderRange (radius).",
+	"carpet.rule.minecartChunkLoader.extra.1": "Tickets expire after 5 seconds: once the cart leaves the rail or disappears, chunks unload within 5 seconds - nothing persists.",
+
+	"carpet.rule.minecartLoaderTypes.name": "minecartLoaderTypes",
+	"carpet.rule.minecartLoaderTypes.desc": "Comma separated minecart types that trigger loading, e.g. minecart,chest_minecart,hopper_minecart. The minecraft: prefix is optional.",
+
+	"carpet.rule.minecartLoaderRails.name": "minecartLoaderRails",
+	"carpet.rule.minecartLoaderRails.desc": "Comma separated rail blocks that trigger loading, e.g. rail,powered_rail,detector_rail,activator_rail.",
+
+	"carpet.rule.minecartLoaderRange.name": "minecartLoaderRange",
+	"carpet.rule.minecartLoaderRange.desc": "Chunk radius kept loaded around the cart, 1-32, default 2.",
+	"carpet.rule.minecartLoaderRange.extra.0": "Cost grows with the square of the radius - keep it small."
+}

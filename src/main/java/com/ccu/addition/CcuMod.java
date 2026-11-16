@@ -1,4 +1,4 @@
-package carpetccu;
+package com.ccu.addition;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
@@ -6,12 +6,12 @@ import net.fabricmc.loader.api.FabricLoader;
 /**
  * Mod 入口。
  *
- * <p>这里只做两件事：拿到本模组的版本号，然后把 {@link CarpetCcuServer} 注册进 Carpet。
+ * <p>这里只做两件事：拿到本模组的版本号，然后把 {@link CcuServer} 注册进 Carpet。
  * 具体的规则解析、命令注册、生命周期回调都交给 Carpet 的扩展机制处理。</p>
  */
-public class CarpetCcuAddition implements ModInitializer {
+public class CcuMod implements ModInitializer {
 
-	public static final String MOD_ID = "carpet_ccu_addition";
+	public static final String MOD_ID = "carpet-ccu-addition";
 
 	private static String version = "dev";
 
@@ -29,8 +29,8 @@ public class CarpetCcuAddition implements ModInitializer {
 				.map(container -> container.getMetadata().getVersion().getFriendlyString())
 				.orElse("dev");
 
-		CarpetCcuServer.init();
+		CcuServer.init();
 
-		CarpetCcuServer.LOGGER.info("Carpet CCU Addition {} 已初始化", version);
+		CcuServer.LOGGER.info("Carpet CCU Addition {} 已初始化", version);
 	}
 }

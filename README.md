@@ -1,103 +1,114 @@
 # Carpet CCU Addition
 
-基于 [Fabric Carpet](https://github.com/gnembon/fabric-carpet) 的服务端扩展模组（地毯附属）。
+[![License](https://img.shields.io/github/license/PeaFlower-9331/carpet-ccu-addition)](https://github.com/PeaFlower-9331/carpet-ccu-addition/blob/main/LICENSE)
+[![GitHub](https://img.shields.io/github/stars/PeaFlower-9331/carpet-ccu-addition?logo=github&label=GitHub)](https://github.com/PeaFlower-9331/carpet-ccu-addition)
+[![MC Versions](https://img.shields.io/badge/Minecraft-1.21.10%20%7C%201.21.11-00AF5C)](https://github.com/PeaFlower-9331/carpet-ccu-addition)
 
-- 主目标版本：**Minecraft 1.21.11 / Fabric**
-- 形态：纯服务端（单机存档同样生效，因为单机自带集成服务端）
-- 规则命令：`/carpet`（本模组规则分类为 `CCU`，`/carpet list CCU` 可直接筛选）
+**中文** | [English](README_en.md)
 
-## 已实现功能
+一个 [Carpet Mod](https://github.com/gnembon/fabric-carpet) 的附属，围绕**假人**与**区块加载**提供几项服务端功能。
 
-| 规则 | 说明 |
+默认配置下不会改变任何原版行为，所有功能都由规则开关控制。
+
+## 依赖
+
+| 名称 | 类型 | 链接 |
+| --- | --- | --- |
+| Carpet Mod | 必需 | https://github.com/gnembon/fabric-carpet |
+| Fabric Loader | 必需 | https://fabricmc.net/ |
+| Carpet Org Addition | 可选（`batch action` 需要） | https://github.com/fcsailboat/Carpet-Org-Addition |
+
+## 支持版本
+
+| Minecraft | 状态 |
 | --- | --- |
-| `ccuFakePlayerProfilePreload` + `ccuFakePlayerNames` | 假人档案预加载：启动时把假人名字登记进 `usercache.json`，`/player <名字> spawn` 直接命中，不再依赖 Mojang 查询 |
-| `ccuCommandBatchPlayerAction` | 批量假人动作：`/playerManager batch action <目标> <动作>`（并入 Carpet Org Addition）或独立的 `/ccuplayer`；动作列表由 `/player` 命令树实时生成，可用 `/player` 的全部动作（背包/末影箱查看除外） |
-| `ccuCommandPlayerLoadRange` | 假人加载范围：`/player <假人名> load <半径\|default>`（并入 Carpet 的 `/player`），把单个假人的加载范围**调大**（只能调大，不能缩小到服务器视距以下）；等价独立命令 `/ccuload` |
-| `ccuMinecartChunkLoader` 等 4 条 | 矿车加载器：指定种类的矿车停在指定种类铁轨上时，每 5 秒给周围区块续一次加载票，票 5 秒过期、不残留 |
-| `ccuDebugLog` | 输出本模组生命周期详细日志，便于排查 |
+| 1.21.11 | 主目标版本 |
+| 1.21.10 | 同步构建 |
 
-详见 [docs/rules.md](docs/rules.md)。
+## 规则
 
-## 环境要求
+规则全部挂在 Carpet 主设置管理器下，用 `/carpet <规则名> <值>` 读写；分类为 `CCU`，子分类为 `假人`（`CCU_fake_player`）与 `矿车`（`CCU_minecart`）。
 
-| 项目 | 版本 |
-| --- | --- |
-| JDK | **21**（Minecraft 1.20.5+ 要求；编译 1.21.11 必须 21） |
-| Gradle | 9.4.1（仓库自带 wrapper，无需手动安装） |
-| Fabric Loader | 0.20.1（`gradle.properties` 可改） |
-| Carpet | 1.21.11-1.4.193+v251211（1.4.194 会让 Carpet Org Addition 的 mixin 目标失配） |
+```bash
+/carpet list CCU                 # 本模组全部规则
+/carpet list CCU_fake_player     # 假人相关
+/carpet list CCU_minecart        # 矿车加载器
+```
+
+| 规则 | 类型 | 默认值 | 分类 | 说明 |
+| --- | --- | --- | --- | --- |
+| `fakePlayerProfilePreload` | boolean | `false` | CCU / 假人 | 启动时把 `fakePlayerNames` 登记进 `usercache`，`/player` 召唤同名假人不再查询 Mojang |
+| `fakePlayerNames` | string | `""` | CCU / 假人 | 要预加载档案的假人名字，逗号或空格分隔 |
+| `commandBatchPlayerAction` | string | `"ops"` | CCU / 假人 / command | 批量假人动作命令的可用级别，取值同 `commandPlayer` |
+| `commandPlayerLoadRange` | string | `"ops"` | CCU / 假人 / command | 加载范围命令的可用级别，取值同 `commandPlayer` |
+| `minecartChunkLoader` | boolean | `false` | CCU / 矿车 | 矿车加载器总开关 |
+| `minecartLoaderTypes` | string | `"minecart"` | CCU / 矿车 | 触发加载的矿车种类，逗号分隔 |
+| `minecartLoaderRails` | string | `"rail"` | CCU / 矿车 | 触发加载的铁轨种类，逗号分隔 |
+| `minecartLoaderRange` | int | `2` | CCU / 矿车 | 矿车周围保持加载的区块半径（1–32） |
+| `debugLog` | boolean | `false` | CCU | 输出详细生命周期日志，便于排查 |
+
+## 命令
+
+命令都并入 Carpet / Carpet Org Addition 原有的命令树，本模组不注册独立命令。
+
+### 批量假人动作
+
+需要 Carpet Org Addition。对一批假人执行任意 `/player` 动作：
+
+```
+/playerManager batch action <名字前缀|all> <动作>
+```
+
+```bash
+/playerManager batch action bot use continuous     # 批量连续右键
+/playerManager batch action bot jump               # 批量跳
+/playerManager batch action bot attack interval 5  # 每 5 刻攻击一次
+/playerManager batch action all stop               # 全部停下
+```
+
+动作列表由 `/player` 命令树实时生成，`/playerManager batch action`（不带参数）即可查看。
+
+### 假人加载范围
+
+```
+/player <假人名> load [半径|default]
+```
+
+```bash
+/player bot1 load            # 查看当前设置
+/player bot1 load 8          # 调到 8 区块（只能调大，无法小于服务器视距）
+/player bot1 load default    # 恢复默认
+```
 
 ## 构建
 
-```bash
-# 只构建 1.21.11
-./gradlew :1.21.11:build
+需要 JDK 21。
 
-# 构建 settings.json 里登记的所有版本，并把成品汇总到 build/libs
-./gradlew buildAndGather
+```bash
+./gradlew buildAndGather     # 构建 settings.json 里登记的所有版本，产物汇总到 build/libs
+./gradlew :1.21.11:build     # 只构建单个版本
 ```
 
-产物在 `versions/1.21.11/build/libs/carpet-ccu-addition-0.1.0-mc1.21.11.jar`。
 `*-dev.jar` 是开发用（未重映射），**不要**发到服务器。
 
 ## 目录结构
 
 ```
 carpet-ccu-addition/
-├── settings.json                  # 登记要构建的 MC 版本列表
-├── settings.gradle                # 把每个版本include成子项目，共用 common.gradle
-├── build.gradle                   # 根构建脚本 + buildAndGather 汇总任务
-├── common.gradle                  # 各版本子项目共用的构建逻辑（Loom/Carpet/打包）
-├── gradle.properties              # 共享属性：mod_id、版本号、loader 版本
-├── versions/
-│   └── 1.21.11/gradle.properties  # 该版本的 minecraft/carpet/java 版本
+├── settings.json                    # 登记要构建的 MC 版本
+├── settings.gradle                  # 每个版本一个子项目，共用 common.gradle
+├── common.gradle                    # Loom / Carpet 依赖 / 打包
+├── versions/<mcver>/gradle.properties
 └── src/main/
-    ├── java/carpetccu/
-    │   ├── CarpetCcuAddition.java   # ModInitializer 入口
-    │   ├── CarpetCcuServer.java     # CarpetExtension 生命周期
-    │   ├── CcuSettings.java         # 规则注册到 /carpet
-    │   └── CarpetCcuSettings.java   # 全部规则字段
-    └── resources/
-        ├── fabric.mod.json
-        └── assets/carpet_ccu/lang/{en_us,zh_cn}.json
+    ├── java/com/ccu/addition/
+    │   ├── CcuMod.java              # ModInitializer 入口
+    │   ├── CcuServer.java           # CarpetExtension 生命周期
+    │   ├── CcuRules.java            # 全部规则字段
+    │   ├── CcuRuleRegistrar.java    # 规则注册进 /carpet
+    │   ├── command/                 # 并入原生命令树的子命令
+    │   └── feature/                 # 档案预加载 / 加载范围 / 矿车加载器
+    └── resources/assets/carpet-ccu-addition/lang/
 ```
-
-## 加一条规则（3 步）
-
-1. `CarpetCcuSettings` 里加字段：
-
-```java
-@Rule(categories = {CCU, RuleCategory.SURVIVAL}, options = {"false", "true"}, strict = true)
-public static boolean ccuMyFeature = false;
-```
-
-2. `assets/carpet_ccu/lang/en_us.json` 与 `zh_cn.json` 补上：
-
-```json
-"carpet.rule.ccuMyFeature.name": "ccuMyFeature",
-"carpet.rule.ccuMyFeature.desc": "……"
-```
-
-3. 在功能代码里读 `CarpetCcuSettings.ccuMyFeature`。
-
-> 规则挂在地毯主命名空间下，所以字段名带 `ccu` 前缀，避免和其它附属重名（重名会让 Carpet 启动直接报错）。
-
-## 加一个 MC 版本
-
-1. `settings.json` 的 `versions` 里加版本号，例如 `"1.21.10"`；
-2. 新建 `versions/1.21.10/gradle.properties`，填 `minecraft_version` / `minecraft_dependency` / `java_version` / `carpet_version`；
-3. 直接 `./gradlew :1.21.10:build`。
-
-如果新版本 API 有差异，再在 `src/main/java/.../compat/` 下加该版本专用实现，
-或按需引入预处理器（参见 `docs/reference-notes.md` 的权衡说明）。
-
-## 本机构建环境的一个坑（仅当前机器）
-
-这台机器上 JDK 21/25 的 `Files.isWritable()` 恒返回 `false`，导致 JDK 内置 zipfs 判定 zip 只读，
-Loom 写映射缓存时抛 `ReadOnlyFileSystemException`（JDK 17 则正常）。
-
-已用 `--patch-module` 把 `jdk.nio.zipfs.ZipFileSystem` 的可写判定改成恒真来绕过，见
-`.tools/run_build.ps1`。**你自己的开发机上通常不会遇到**，直接用 IDEA / 命令行 Gradle 构建即可。
 
 ## 许可证
 

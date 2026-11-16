@@ -1,7 +1,7 @@
-package carpetccu.feature;
+package com.ccu.addition.feature;
 
-import carpetccu.CarpetCcuServer;
-import carpetccu.CarpetCcuSettings;
+import com.ccu.addition.CcuServer;
+import com.ccu.addition.CcuRules;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -39,7 +39,7 @@ import java.util.Set;
  * 不会调用 {@code UserNameToIdResolver#get(String)}——那个方法在未命中时会向 Mojang 发起查询，
  * 在断网或网络受限的服务器上会让启动卡住。</p>
  *
- * <p>注意：规则只在服务器启动时生效，运行期改动 {@code ccuFakePlayerNames} 需要重启服务器。</p>
+ * <p>注意：规则只在服务器启动时生效，运行期改动 {@code fakePlayerNames} 需要重启服务器。</p>
  */
 public final class FakePlayerProfilePreloader {
 
@@ -58,13 +58,13 @@ public final class FakePlayerProfilePreloader {
 	 * 在服务器、世界加载完成后执行一次预加载。
 	 */
 	public static void preload(MinecraftServer server) {
-		if (!CarpetCcuSettings.ccuFakePlayerProfilePreload) {
+		if (!CcuRules.fakePlayerProfilePreload) {
 			return;
 		}
 
-		List<String> names = parseNames(CarpetCcuSettings.ccuFakePlayerNames);
+		List<String> names = parseNames(CcuRules.fakePlayerNames);
 		if (names.isEmpty()) {
-			CarpetCcuServer.LOGGER.warn("规则 ccuFakePlayerProfilePreload 已开启，但 ccuFakePlayerNames 为空，跳过预加载");
+			CcuServer.LOGGER.warn("规则 fakePlayerProfilePreload 已开启，但 fakePlayerNames 为空，跳过预加载");
 			return;
 		}
 
@@ -78,7 +78,7 @@ public final class FakePlayerProfilePreloader {
 		for (String name : names) {
 			if (!isValidName(name)) {
 				invalid++;
-				CarpetCcuServer.LOGGER.warn("跳过非法假人名（长度 {}-{}，仅限字母数字下划线）：{}", MIN_NAME_LENGTH, MAX_NAME_LENGTH, name);
+				CcuServer.LOGGER.warn("跳过非法假人名（长度 {}-{}，仅限字母数字下划线）：{}", MIN_NAME_LENGTH, MAX_NAME_LENGTH, name);
 				continue;
 			}
 
@@ -97,7 +97,7 @@ public final class FakePlayerProfilePreloader {
 			cache.save();
 		}
 
-		CarpetCcuServer.LOGGER.info(
+		CcuServer.LOGGER.info(
 				"假人档案预加载完成：新增 {}，已存在 {}，非法 {}（共 {} 个名字）",
 				added, existed, invalid, names.size()
 		);
@@ -123,7 +123,7 @@ public final class FakePlayerProfilePreloader {
 			}
 			return names;
 		} catch (Exception e) {
-			CarpetCcuServer.LOGGER.warn("读取 {} 失败，将视为没有任何已缓存的假人档案", USERCACHE_FILE, e);
+			CcuServer.LOGGER.warn("读取 {} 失败，将视为没有任何已缓存的假人档案", USERCACHE_FILE, e);
 			return Set.of();
 		}
 	}

@@ -4,11 +4,11 @@
 
 | 规则 | 类型 | 默认值 | 分类 | 说明 |
 | --- | --- | --- | --- | --- |
-| `ccuDebugLog` | boolean | `false` | CCU / creative / feature | 输出本模组的详细生命周期日志，仅影响日志详细程度 |
-| `ccuFakePlayerProfilePreload` | boolean | `false` | CCU / CCU_fake_player / survival / feature | 服务器启动时预加载假人档案 |
-| `ccuFakePlayerNames` | string | `""` | CCU / CCU_fake_player / survival / feature | 要预加载的假人名字，逗号或空格分隔 |
-| `ccuCommandBatchPlayerAction` | string | `"ops"` | CCU / CCU_fake_player / command | `/ccuplayer` 与 `batch action` 的可用级别，取值同 `commandPlayer` |
-| `ccuCommandPlayerLoadRange` | string | `"ops"` | CCU / CCU_fake_player / command | `/ccuload` 的可用级别，取值同 `commandPlayer` |
+| `debugLog` | boolean | `false` | CCU / creative / feature | 输出本模组的详细生命周期日志，仅影响日志详细程度 |
+| `fakePlayerProfilePreload` | boolean | `false` | CCU / CCU_fake_player / survival / feature | 服务器启动时预加载假人档案 |
+| `fakePlayerNames` | string | `""` | CCU / CCU_fake_player / survival / feature | 要预加载的假人名字，逗号或空格分隔 |
+| `commandBatchPlayerAction` | string | `"ops"` | CCU / CCU_fake_player / command | `batch action` 的可用级别，取值同 `commandPlayer` |
+| `commandPlayerLoadRange` | string | `"ops"` | CCU / CCU_fake_player / command | `/player <名字> load` 的可用级别，取值同 `commandPlayer` |
 
 ## 假人加载范围
 
@@ -16,20 +16,12 @@
 
 ### 命令
 
-已并入 Carpet 的 `/player` 命令（推荐）：
+命令已并入 Carpet 的 `/player`，没有额外的独立命令：
 
 ```
 /player bot1 load              # 查看 bot1 当前的设置
 /player bot1 load 8            # 把 bot1 的加载范围调到 8 区块（实体刻）
 /player bot1 load default      # 恢复默认：跟随服务器视距
-```
-
-等价的独立命令（没装 Carpet 时也能用，或习惯单独命令时）：
-
-```
-/ccuload                       # 列出全部设置
-/ccuload bot1 8
-/ccuload bot1 default
 ```
 
 - 未设置的假人**不额外加载**，行为与原版完全一致（只按服务器 `view-distance` 加载）。
@@ -73,29 +65,29 @@ TicketType(CCU, 不持久化, 加载 + 模拟)
 
 | 规则 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
-| `ccuMinecartChunkLoader` | boolean | `false` | 总开关 |
-| `ccuMinecartLoaderTypes` | string | `"minecart"` | 触发加载的矿车种类，逗号分隔，可省略 `minecraft:` 前缀 |
-| `ccuMinecartLoaderRails` | string | `"rail"` | 触发加载的铁轨种类，逗号分隔，同上 |
-| `ccuMinecartLoaderRange` | int | `2` | 半径（区块），取值 1–32 |
+| `minecartChunkLoader` | boolean | `false` | 总开关 |
+| `minecartLoaderTypes` | string | `"minecart"` | 触发加载的矿车种类，逗号分隔，可省略 `minecraft:` 前缀 |
+| `minecartLoaderRails` | string | `"rail"` | 触发加载的铁轨种类，逗号分隔，同上 |
+| `minecartLoaderRange` | int | `2` | 半径（区块），取值 1–32 |
 
 ### 示例
 
 写进 `world/carpet.conf`：
 
 ```conf
-ccuMinecartChunkLoader true
-ccuMinecartLoaderTypes minecart,chest_minecart
-ccuMinecartLoaderRails rail,powered_rail
-ccuMinecartLoaderRange 8
+minecartChunkLoader true
+minecartLoaderTypes minecart,chest_minecart
+minecartLoaderRails rail,powered_rail
+minecartLoaderRange 8
 ```
 
 也可以在游戏里逐条设：
 
 ```
-/carpet ccuMinecartLoaderTypes minecart,chest_minecart
-/carpet ccuMinecartLoaderRails rail,powered_rail
-/carpet ccuMinecartLoaderRange 8
-/carpet ccuMinecartChunkLoader true
+/carpet minecartLoaderTypes minecart,chest_minecart
+/carpet minecartLoaderRails rail,powered_rail
+/carpet minecartLoaderRange 8
+/carpet minecartChunkLoader true
 ```
 
 ### 行为
@@ -110,17 +102,13 @@ ccuMinecartLoaderRange 8
 
 ### 命令
 
-装了 **Carpet Org Addition** 时，命令并入它的批量命令：
+命令并入 **Carpet Org Addition** 的批量命令（没有独立命令）：
 
 ```
 /playerManager batch action <目标> <动作>
 ```
 
-没装时（或想用短命令）用等价入口：
-
-```
-/ccuplayer <目标> <动作>
-```
+没有安装 Carpet Org Addition 时，本功能不会注册任何命令。
 
 `<目标>` 的匹配规则：
 
@@ -138,7 +126,7 @@ ccuMinecartLoaderRange 8
 查看当前可用动作：
 
 ```
-/playerManager batch action      # 或 /ccuplayer
+/playerManager batch action      # 不带参数即列出动作
 ```
 
 在默认配置（Carpet 1.4.193 + Carpet Org 1.41.7）下共 20 个：
@@ -222,10 +210,10 @@ Carpet 的 `/player <名字> spawn` 创建假人时，先用名字确定 UUID
 
 ```bash
 # 1. 写名字列表（逗号或空格分隔）
-/carpet ccuFakePlayerNames bot1,bot2,bot_farm
+/carpet fakePlayerNames bot1,bot2,bot_farm
 
 # 2. 打开开关
-/carpet ccuFakePlayerProfilePreload true
+/carpet fakePlayerProfilePreload true
 
 # 3. 重启服务器（规则只在启动时生效）
 ```
@@ -241,8 +229,8 @@ Carpet 的 `/player <名字> spawn` 创建假人时，先用名字确定 UUID
 也可以直接写进 `world/carpet.conf`：
 
 ```conf
-ccuFakePlayerProfilePreload true
-ccuFakePlayerNames bot1,bot2,bot_farm
+fakePlayerProfilePreload true
+fakePlayerNames bot1,bot2,bot_farm
 ```
 
 ### 行为细节
@@ -263,6 +251,6 @@ ccuFakePlayerNames bot1,bot2,bot_farm
 
 ## 加规则的三步
 
-1. `CarpetCcuSettings` 加带 `@Rule` 的 `public static` 字段；
+1. `CcuRules` 加带 `@Rule` 的 `public static` 字段；
 2. `assets/carpet_ccu/lang/{en_us,zh_cn}.json` 补 `carpet.rule.<字段名>.name` / `.desc`；
 3. 在功能代码里读字段，并同步更新本文件。

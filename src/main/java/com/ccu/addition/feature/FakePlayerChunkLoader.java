@@ -1,7 +1,7 @@
-package carpetccu.feature;
+package com.ccu.addition.feature;
 
 import carpet.patches.EntityPlayerMPFake;
-import carpetccu.CarpetCcuServer;
+import com.ccu.addition.CcuServer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -98,7 +98,7 @@ public final class FakePlayerChunkLoader {
 				}
 			}
 		} catch (Exception e) {
-			CarpetCcuServer.LOGGER.warn("读取假人加载范围配置失败：{}", path, e);
+			CcuServer.LOGGER.warn("读取假人加载范围配置失败：{}", path, e);
 		}
 	}
 
@@ -110,7 +110,7 @@ public final class FakePlayerChunkLoader {
 			RANGES.forEach(json::addProperty);
 			Files.writeString(path, GSON.toJson(json), StandardCharsets.UTF_8);
 		} catch (Exception e) {
-			CarpetCcuServer.LOGGER.warn("保存假人加载范围配置失败：{}", path, e);
+			CcuServer.LOGGER.warn("保存假人加载范围配置失败：{}", path, e);
 		}
 	}
 

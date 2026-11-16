@@ -1,9 +1,9 @@
-package carpetccu.command;
+package com.ccu.addition.command;
 
 import carpet.patches.EntityPlayerMPFake;
 import carpet.utils.CommandHelper;
-import carpetccu.CarpetCcuServer;
-import carpetccu.CarpetCcuSettings;
+import com.ccu.addition.CcuServer;
+import com.ccu.addition.CcuRules;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -63,20 +63,6 @@ public final class BatchPlayerActionCommand {
 	}
 
 	/**
-	 * 注册独立的 {@code /ccuplayer} 命令。
-	 */
-	public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext buildContext) {
-		dispatcher.register(Commands.literal("ccuplayer")
-				.requires(BatchPlayerActionCommand::allowed)
-				.executes(BatchPlayerActionCommand::showActions)
-				.then(Commands.argument("target", StringArgumentType.word())
-						.suggests((context, builder) -> SharedSuggestionProvider.suggest(
-								suggestions(context.getSource().getServer()), builder))
-						.then(Commands.argument("action", StringArgumentType.greedyString())
-								.executes(BatchPlayerActionCommand::run))));
-	}
-
-	/**
 	 * 把 {@code batch action ...} 挂到 Carpet Org Addition 的批量命令下。
 	 *
 	 * <p>在命令树完全建好之后调用（服务器加载完成 / 资源重载后），避免与其它模组的注册顺序竞争。
@@ -97,7 +83,7 @@ public final class BatchPlayerActionCommand {
 			}
 			if (batch.getChild(ACTION_NODE) == null) {
 				batch.addChild(buildActionNode());
-				CarpetCcuServer.LOGGER.info("已把批量动作并入 /{} batch：/{}/batch {} <目标> <动作>",
+				CcuServer.LOGGER.info("已把批量动作并入 /{} batch：/{}/batch {} <目标> <动作>",
 						rootChild.getName(), rootChild.getName(), ACTION_NODE);
 			}
 			attached++;
@@ -203,7 +189,7 @@ public final class BatchPlayerActionCommand {
 	}
 
 	private static boolean allowed(CommandSourceStack source) {
-		return CommandHelper.canUseCommand(source, CarpetCcuSettings.ccuCommandBatchPlayerAction);
+		return CommandHelper.canUseCommand(source, CcuRules.commandBatchPlayerAction);
 	}
 
 	private static int run(CommandContext<CommandSourceStack> context) {

@@ -3,15 +3,19 @@
 	"id": "${id}",
 	"version": "${version}",
 	"name": "${name}",
-	"description": "基于 Fabric Carpet 的服务端规则扩展。",
+	"description": "Carpet CCU Addition —— 一个围绕假人与区块加载的 Carpet 附属。",
 	"authors": [
 		"CCU"
 	],
+	"contact": {
+		"sources": "https://github.com/PeaFlower-9331/carpet-ccu-addition",
+		"issues": "https://github.com/PeaFlower-9331/carpet-ccu-addition/issues"
+	},
 	"license": "MIT",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"carpetccu.CarpetCcuAddition"
+			"com.ccu.addition.CcuMod"
 		]
 	},
 	"depends": {

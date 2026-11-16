@@ -1,7 +1,7 @@
-package carpetccu.feature;
+package com.ccu.addition.feature;
 
-import carpetccu.CarpetCcuServer;
-import carpetccu.CarpetCcuSettings;
+import com.ccu.addition.CcuServer;
+import com.ccu.addition.CcuRules;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
@@ -19,7 +19,7 @@ import java.util.Set;
  * 矿车加载器。
  *
  * <p>当「指定种类的矿车」停在「指定种类的铁轨」上时，每 5 秒给它所在区块挂一次加载票，
- * 让周围 {@code ccuMinecartLoaderRange} 个区块保持加载与实体刻。</p>
+ * 让周围 {@code minecartLoaderRange} 个区块保持加载与实体刻。</p>
  *
  * <p>实现要点：</p>
  * <ul>
@@ -53,17 +53,17 @@ public final class MinecartChunkLoader {
 		if (server.getTickCount() % TICKET_TIMEOUT_TICKS != 0) {
 			return;
 		}
-		if (!CarpetCcuSettings.ccuMinecartChunkLoader) {
+		if (!CcuRules.minecartChunkLoader) {
 			return;
 		}
 
-		Set<String> types = parseIds(CarpetCcuSettings.ccuMinecartLoaderTypes);
-		Set<String> rails = parseIds(CarpetCcuSettings.ccuMinecartLoaderRails);
+		Set<String> types = parseIds(CcuRules.minecartLoaderTypes);
+		Set<String> rails = parseIds(CcuRules.minecartLoaderRails);
 		if (types.isEmpty() || rails.isEmpty()) {
 			return;
 		}
 
-		int range = Math.max(MIN_RANGE, Math.min(MAX_RANGE, CarpetCcuSettings.ccuMinecartLoaderRange));
+		int range = Math.max(MIN_RANGE, Math.min(MAX_RANGE, CcuRules.minecartLoaderRange));
 		int loaded = 0;
 
 		for (ServerLevel level : server.getAllLevels()) {
@@ -85,7 +85,7 @@ public final class MinecartChunkLoader {
 		}
 
 		if (loaded > 0) {
-			CarpetCcuServer.debug("矿车加载器：本轮为 %d 辆矿车续票（半径 %d 区块）", loaded, range);
+			CcuServer.debug("矿车加载器：本轮为 %d 辆矿车续票（半径 %d 区块）", loaded, range);
 		}
 	}
 

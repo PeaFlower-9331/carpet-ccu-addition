@@ -1,4 +1,4 @@
-package carpetccu;
+package com.ccu.addition;
 
 import carpet.api.settings.Rule;
 import carpet.api.settings.RuleCategory;
@@ -20,7 +20,7 @@ import carpet.api.settings.RuleCategory;
  * <p>因为规则挂在主 {@code /carpet} 命名空间下，字段名建议保留 {@code ccu} 前缀，
  * 避免与其它附属的规则重名（重名会让 Carpet 在启动时直接报错）。</p>
  */
-public final class CarpetCcuSettings {
+public final class CcuRules {
 
 	/**
 	 * 本模组的规则分类名。自定义分类是允许的，Carpet 会自动收进设置管理器，
@@ -38,7 +38,7 @@ public final class CarpetCcuSettings {
 	 */
 	public static final String CCU_MINECART = "CCU_minecart";
 
-	private CarpetCcuSettings() {
+	private CcuRules() {
 	}
 
 	@Rule(
@@ -46,38 +46,38 @@ public final class CarpetCcuSettings {
 			options = {"false", "true"},
 			strict = true
 	)
-	public static boolean ccuDebugLog = false;
+	public static boolean debugLog = false;
 
 	@Rule(categories = {CCU, CCU_FAKE_PLAYER, RuleCategory.SURVIVAL, RuleCategory.FEATURE})
-	public static boolean ccuFakePlayerProfilePreload = false;
+	public static boolean fakePlayerProfilePreload = false;
 
 	@Rule(categories = {CCU, CCU_FAKE_PLAYER, RuleCategory.SURVIVAL, RuleCategory.FEATURE})
-	public static String ccuFakePlayerNames = "";
+	public static String fakePlayerNames = "";
 
 	/**
 	 * 控制 {@code /ccuplayer} 命令的可用级别，取值与 Carpet 的 {@code commandPlayer} 一致：
 	 * false / true / ops / 0 / 1 / 2 / 3 / 4。
 	 */
 	@Rule(categories = {CCU, CCU_FAKE_PLAYER, RuleCategory.COMMAND})
-	public static String ccuCommandBatchPlayerAction = "ops";
+	public static String commandBatchPlayerAction = "ops";
 
 	/**
 	 * 控制 {@code /ccuload} 命令的可用级别，取值同 {@code commandPlayer}。
 	 */
 	@Rule(categories = {CCU, CCU_FAKE_PLAYER, RuleCategory.COMMAND})
-	public static String ccuCommandPlayerLoadRange = "ops";
+	public static String commandPlayerLoadRange = "ops";
 
 	// ---------------------------------------------------------------- 矿车加载器
 
 	@Rule(categories = {CCU, CCU_MINECART, RuleCategory.FEATURE, RuleCategory.CREATIVE})
-	public static boolean ccuMinecartChunkLoader = false;
+	public static boolean minecartChunkLoader = false;
 
 	@Rule(categories = {CCU, CCU_MINECART, RuleCategory.FEATURE, RuleCategory.CREATIVE})
-	public static String ccuMinecartLoaderTypes = "minecart";
+	public static String minecartLoaderTypes = "minecart";
 
 	@Rule(categories = {CCU, CCU_MINECART, RuleCategory.FEATURE, RuleCategory.CREATIVE})
-	public static String ccuMinecartLoaderRails = "rail";
+	public static String minecartLoaderRails = "rail";
 
 	@Rule(categories = {CCU, CCU_MINECART, RuleCategory.FEATURE, RuleCategory.CREATIVE})
-	public static int ccuMinecartLoaderRange = 2;
+	public static int minecartLoaderRange = 2;
 }
