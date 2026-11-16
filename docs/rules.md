@@ -16,10 +16,20 @@
 
 ### 命令
 
+已并入 Carpet 的 `/player` 命令（推荐）：
+
 ```
-/ccuload                       # 列出已有的设置
-/ccuload bot1 8                # 把 bot1 的加载范围调到 8 区块（实体刻）
-/ccuload bot1 default          # 恢复默认：跟随服务器视距
+/player bot1 load              # 查看 bot1 当前的设置
+/player bot1 load 8            # 把 bot1 的加载范围调到 8 区块（实体刻）
+/player bot1 load default      # 恢复默认：跟随服务器视距
+```
+
+等价的独立命令（没装 Carpet 时也能用，或习惯单独命令时）：
+
+```
+/ccuload                       # 列出全部设置
+/ccuload bot1 8
+/ccuload bot1 default
 ```
 
 - 未设置的假人**不额外加载**，行为与原版完全一致（只按服务器 `view-distance` 加载）。

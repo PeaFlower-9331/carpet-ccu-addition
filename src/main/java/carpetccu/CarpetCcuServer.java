@@ -40,6 +40,11 @@ public class CarpetCcuServer implements CarpetExtension {
 	private boolean commandsAttached = false;
 
 	/**
+	 * 加载范围是否已并入 Carpet 的 /player 命令。
+	 */
+	private boolean loadRangeAttached = false;
+
+	/**
 	 * 挂载尝试次数上限，避免没装 Carpet Org 时每刻重复扫描命令树。
 	 */
 	private int attachAttempts = 0;
@@ -66,6 +71,8 @@ public class CarpetCcuServer implements CarpetExtension {
 		debug("服务器已加载");
 		// 命令树此时通常已建好（所有模组都注册完毕），把批量动作并进 Carpet Org 的批量命令
 		commandsAttached = BatchPlayerActionCommand.attachToBatchCommand(server) > 0;
+		// 把加载范围并进 Carpet 的 /player <名字> load
+		loadRangeAttached = LoadRangeCommand.attachToPlayerCommand(server) > 0;
 		// 读取假人加载范围配置（按名字保存，重新召唤后依然生效）
 		FakePlayerChunkLoader.load();
 	}
@@ -85,6 +92,9 @@ public class CarpetCcuServer implements CarpetExtension {
 			// 命令树可能晚于 onServerLoaded 建好，这里兜底重试几次（没装 Carpet Org 时不做无谓尝试）
 			attachAttempts++;
 			commandsAttached = BatchPlayerActionCommand.attachToBatchCommand(server) > 0;
+			if (!loadRangeAttached) {
+				loadRangeAttached = LoadRangeCommand.attachToPlayerCommand(server) > 0;
+			}
 		}
 		// 假人加载范围：按配置给假人维持区块 ticket（内部每 20 刻对账一次）
 		FakePlayerChunkLoader.tick(server);
@@ -114,6 +124,7 @@ public class CarpetCcuServer implements CarpetExtension {
 		debug("服务器 /reload");
 		// 资源重载会重建命令树，需要重新挂载
 		BatchPlayerActionCommand.attachToBatchCommand(server);
+		LoadRangeCommand.attachToPlayerCommand(server);
 	}
 
 	// ---------------------------------------------------------------- 命令
