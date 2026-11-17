@@ -19,6 +19,8 @@
 	"carpet.rule.commandBatchPlayerAction.extra.1": "Action syntax is parsed by Carpet's /player command, so every /player action works here too.",
 	"carpet.rule.commandPlayerLoadRange.name": "commandPlayerLoadRange",
 	"carpet.rule.commandPlayerLoadRange.desc": "Enables the load range command: /player <bot> load [radius|default], enlarging a single fake player's chunk loading range. Enlarge only - it can never go below the server view distance. Values: false / true / ops / 0-4, same meaning as commandPlayer.",
+	"carpet.rule.commandPlayerRejoin.name": "commandPlayerRejoin",
+	"carpet.rule.commandPlayerRejoin.desc": "Permission level of the /player <name> rejoin command, same values as commandPlayer.",
 	"carpet.rule.commandPlayerLoadRange.extra.0": "For example /player bot1 load 8; /player bot1 load default restores the server view distance behaviour.",
 	"carpet.rule.commandPlayerLoadRange.extra.1": "Bots without a setting load chunks exactly like vanilla. A radius not larger than the server view distance has no extra effect, because vanilla tickets cannot be cancelled.",
 	"carpet.rule.minecartChunkLoader.name": "minecartChunkLoader",

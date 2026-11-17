@@ -2,11 +2,11 @@ package com.ccu.addition.mixin;
 
 import carpet.patches.EntityPlayerMPFake;
 import com.ccu.addition.CcuRules;
+import com.ccu.addition.feature.RejoinState;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Relative;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,49 +14,32 @@ import org.spongepowered.asm.mixin.injection.At;
 import java.util.Set;
 
 /**
- * 规则 {@code fakePlayerKeepVehicle}：假人重登时保留之前乘坐的载具。
+ * {@code /player <名字> rejoin} 与规则 {@code fakePlayerKeepVehicle} 的召唤流程修正。
  *
- * <p>做法参考 Carpet Org Addition 的「原始位置生成」：不去搬动载具，而是让 Carpet 的召唤流程
- * <strong>跳过三个会破坏骑乘状态的调用</strong>：</p>
+ * <p>写法参考 Carpet TIS Addition 的 {@code fakePlayerRejoin}：{@code rejoin} 会置位
+ * {@link RejoinState} 标记并复用 Carpet 的 {@code spawn}，本 mixin 在召唤 lambda 里按标记跳过：</p>
  *
  * <ol>
- *     <li>{@code instance.stopRiding()} —— Carpet 读完存档后主动把假人踢下載具；</li>
- *     <li>{@code instance.teleportTo(...)} —— 把假人传送到召唤点，传送本身会让乘客下车；</li>
- *     <li>{@code instance.snapTo(...)} —— 召唤起始位置的吸附（{@code fixStartingPosition}）。</li>
+ *     <li>{@code teleportTo(...)} —— 否则会传送到命令执行点，而不是存档位置；</li>
+ *     <li>{@code snapTo(...)} —— 起始位置吸附会再次把人拽走；</li>
+ *     <li>{@code stopRiding()} —— 仅在规则 {@code fakePlayerKeepVehicle} 开启且确实恢复了载具时跳过，
+ *     让假人保持原来的骑乘状态。</li>
  * </ol>
  *
- * <p>三个调用都在 Carpet 的 {@code lambda$createFake$N} 里，1.4.188 与 1.4.193 的编号一致
- * （{@code $2} 是主流程、{@code $1} 是起始位置吸附）。触发条件很窄：只有「这次召唤确实从存档里
- * 恢复了载具」（即 {@code getVehicle() != null}）才跳过，没载具的假人行为与 Carpet 原版完全一致。</p>
- *
- * <p>因为不搬动载具、也不做任何传送，所以不会出现载具被挤压/贴地导致的坐标偏移。</p>
+ * <p>普通 {@code /player <名字> spawn} 不置位标记，三个调用照常执行，行为与 Carpet 原版一致。
+ * 由于本 mixin 从不移动载具或假人的坐标，不会产生载具被挤压/贴地导致的偏移。</p>
  */
 @Mixin(EntityPlayerMPFake.class)
 public abstract class FakePlayerVehicleMixin {
-
-	/**
-	 * 这次召唤是否应当保留载具与原始位置。
-	 */
-	private static boolean ccu$keepRiding(EntityPlayerMPFake instance) {
-		return CcuRules.fakePlayerKeepVehicle && instance.getVehicle() != null;
-	}
-
-	@WrapWithCondition(
-			method = "lambda$createFake$2",
-			at = @At(value = "INVOKE", target = "Lcarpet/patches/EntityPlayerMPFake;stopRiding()V")
-	)
-	private static boolean ccu$skipStopRiding(EntityPlayerMPFake instance) {
-		return !ccu$keepRiding(instance);
-	}
 
 	@WrapOperation(
 			method = "lambda$createFake$2",
 			at = @At(value = "INVOKE", target = "Lcarpet/patches/EntityPlayerMPFake;teleportTo(Lnet/minecraft/server/level/ServerLevel;DDDLjava/util/Set;FFZ)Z")
 	)
-	private static boolean ccu$skipTeleport(EntityPlayerMPFake instance, ServerLevel level, double x, double y, double z,
-	                                         Set<Relative> relatives, float yaw, float pitch, boolean resetCamera,
-	                                         Operation<Boolean> original) {
-		if (ccu$keepRiding(instance)) {
+	private static boolean ccu$skipTeleportOnRejoin(EntityPlayerMPFake instance, ServerLevel level, double x, double y,
+	                                                 double z, Set<Relative> relatives, float yaw, float pitch,
+	                                                 boolean resetCamera, Operation<Boolean> original) {
+		if (RejoinState.isRejoin()) {
 			return false;
 		}
 		return original.call(instance, level, x, y, z, relatives, yaw, pitch, resetCamera);
@@ -66,18 +49,22 @@ public abstract class FakePlayerVehicleMixin {
 			method = "lambda$createFake$1",
 			at = @At(value = "INVOKE", target = "Lcarpet/patches/EntityPlayerMPFake;snapTo(DDDFF)V")
 	)
-	private static void ccu$skipSnapTo(EntityPlayerMPFake instance, double x, double y, double z, float yaw, float pitch,
-	                                   Operation<Void> original) {
-		if (ccu$keepRiding(instance)) {
+	private static void ccu$skipSnapToOnRejoin(EntityPlayerMPFake instance, double x, double y, double z, float yaw,
+	                                           float pitch, Operation<Void> original) {
+		if (RejoinState.isRejoin()) {
 			return;
 		}
 		original.call(instance, x, y, z, yaw, pitch);
 	}
 
-	/**
-	 * 供注释引用，避免 IDE 把 import 判成未使用。
-	 */
-	private static Entity ccu$unused(Entity entity) {
-		return entity;
+	@WrapWithCondition(
+			method = "lambda$createFake$2",
+			at = @At(value = "INVOKE", target = "Lcarpet/patches/EntityPlayerMPFake;stopRiding()V")
+	)
+	private static boolean ccu$keepVehicleOnRejoin(EntityPlayerMPFake instance) {
+		boolean keepRiding = RejoinState.isRejoin()
+				&& CcuRules.fakePlayerKeepVehicle
+				&& instance.getVehicle() != null;
+		return !keepRiding;
 	}
 }

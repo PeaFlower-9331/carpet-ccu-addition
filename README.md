@@ -38,7 +38,8 @@
 | 规则 | 类型 | 默认值 | 分类 | 说明 |
 | --- | --- | --- | --- | --- |
 | `fakePlayerSpawnPreload` | boolean | `true` | CCU / 假人 | `/player <名字> spawn` 时先异步预加载档案再召唤，避免召唤卡顿 |
-| `fakePlayerKeepVehicle` | boolean | `true` | CCU / 假人 | 假人重登时保留之前乘坐的载具：跳过 Carpet 的下坐骑与传送，载具全程不动 |
+| `fakePlayerKeepVehicle` | boolean | `true` | CCU / 假人 | `/player <名字> rejoin` 时保留原来乘坐的载具 |
+| `commandPlayerRejoin` | string | `"ops"` | CCU / 假人 / command | `rejoin` 的可用级别，取值同 `commandPlayer` |
 | `commandBatchPlayerAction` | string | `"ops"` | CCU / 假人 / command | 批量假人动作命令的可用级别，取值同 `commandPlayer` |
 | `commandPlayerLoadRange` | string | `"ops"` | CCU / 假人 / command | 加载范围命令的可用级别，取值同 `commandPlayer` |
 | `minecartChunkLoader` | boolean | `false` | CCU / 矿车 | 矿车加载器总开关 |
@@ -68,6 +69,23 @@
 ```
 
 动作列表由 `/player` 命令树实时生成，`/playerManager batch action`（不带参数）即可查看。
+
+### 假人 rejoin
+
+以**存档位置**重新召唤假人（而不是像 `spawn` 那样放到命令执行点），并保留原来乘坐的载具：
+
+```
+/player bot1 rejoin
+```
+
+对照：
+
+| 命令 | 位置 | 骑乘 |
+| --- | --- | --- |
+| `/player bot1 spawn` | 命令执行点（Carpet 原版） | 下车 |
+| `/player bot1 rejoin` | 存档位置 | 保留（`fakePlayerKeepVehicle`） |
+
+写法参考 Carpet TIS Addition 的 `fakePlayerRejoin`。
 
 ### 假人加载范围
 

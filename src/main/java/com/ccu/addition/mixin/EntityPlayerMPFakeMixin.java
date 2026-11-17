@@ -3,6 +3,7 @@ package com.ccu.addition.mixin;
 import carpet.patches.EntityPlayerMPFake;
 import com.ccu.addition.CcuRules;
 import com.ccu.addition.feature.FakePlayerSpawnPreloader;
+import com.ccu.addition.feature.RejoinState;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.GameType;
@@ -14,6 +15,12 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.function.BiConsumer;
 
 /**
  * 规则 {@code fakePlayerSpawnPreload}：召唤假人时先异步预加载档案，再真正召唤。
@@ -36,6 +43,24 @@ public abstract class EntityPlayerMPFakeMixin {
 		throw new AssertionError("shadow");
 	}
 
+	/**
+	 * Carpet 的 spawn 主体跑在 {@code whenCompleteAsync(..., server)} 的回调里，
+	 * 那时 rejoin 命令早已执行完、线程标记被清掉；这里把标记包进回调再执行。
+	 */
+	@WrapOperation(
+			method = "createFake",
+			at = @At(value = "INVOKE", target = "Ljava/util/concurrent/CompletableFuture;whenCompleteAsync(Ljava/util/function/BiConsumer;Ljava/util/concurrent/Executor;)Ljava/util/concurrent/CompletableFuture;")
+	)
+	private static <T> CompletableFuture<T> ccu$propagateRejoinFlag(CompletableFuture<T> future,
+	                                                                  BiConsumer<? super T, ? super Throwable> action,
+	                                                                  Executor executor,
+	                                                                  Operation<CompletableFuture<T>> original) {
+		boolean rejoin = RejoinState.isRejoin();
+		BiConsumer<? super T, ? super Throwable> wrapped =
+				(value, throwable) -> RejoinState.runWith(rejoin, () -> action.accept(value, throwable));
+		return original.call(future, wrapped, executor);
+	}
+
 	@Inject(method = "createFake", at = @At("HEAD"), cancellable = true)
 	private static void ccu$preloadProfileBeforeSpawn(String username, MinecraftServer server, Vec3 pos,
 	                                                  double yaw, double pitch, ResourceKey<Level> dimensionId,
@@ -50,10 +75,13 @@ public abstract class EntityPlayerMPFakeMixin {
 
 		// 取消本次召唤，等档案就绪后重放
 		cir.setReturnValue(true);
+		// 重放跨越了任务边界，rejoin 标记要显式带过去
+		boolean rejoin = RejoinState.isRejoin();
 		FakePlayerSpawnPreloader.preloadThen(server, username, () -> {
 			CCU_REENTER.set(Boolean.TRUE);
 			try {
-				createFake(username, server, pos, yaw, pitch, dimensionId, gamemode, flying);
+				RejoinState.runWith(rejoin,
+						() -> createFake(username, server, pos, yaw, pitch, dimensionId, gamemode, flying));
 			} finally {
 				CCU_REENTER.set(Boolean.FALSE);
 			}

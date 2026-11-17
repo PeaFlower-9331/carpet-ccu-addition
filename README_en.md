@@ -38,7 +38,8 @@ All rules live in Carpet's main settings manager: `/carpet <rule> <value>`. Cate
 | Rule | Type | Default | Category | Description |
 | --- | --- | --- | --- | --- |
 | `fakePlayerSpawnPreload` | boolean | `true` | CCU / fake_player | `/player <name> spawn` preloads the profile asynchronously before spawning, avoiding a stall |
-| `fakePlayerKeepVehicle` | boolean | `true` | CCU / fake_player | Keeps the fake player on its vehicle when rejoining: skips Carpet's dismount and teleport, the vehicle never moves |
+| `fakePlayerKeepVehicle` | boolean | `true` | CCU / fake_player | `/player <name> rejoin` keeps the vehicle the bot was riding |
+| `commandPlayerRejoin` | string | `"ops"` | CCU / fake_player / command | Permission level of `rejoin`, same values as `commandPlayer` |
 | `commandBatchPlayerAction` | string | `"ops"` | CCU / fake_player / command | Permission level of the batch action command, same values as `commandPlayer` |
 | `commandPlayerLoadRange` | string | `"ops"` | CCU / fake_player / command | Permission level of the load range command, same values as `commandPlayer` |
 | `minecartChunkLoader` | boolean | `false` | CCU / minecart | Master switch of the minecart chunk loader |
@@ -68,6 +69,21 @@ Requires Carpet Org Addition. Runs any `/player` action on a group of bots:
 ```
 
 The action list is derived from the `/player` command tree at runtime; run `/playerManager batch action` without arguments to print it.
+
+### Fake player rejoin
+
+Respawns a bot **at its saved position** (instead of the command position like `spawn`), keeping the vehicle it was riding:
+
+```
+/player bot1 rejoin
+```
+
+| Command | Position | Vehicle |
+| --- | --- | --- |
+| `/player bot1 spawn` | command position (vanilla Carpet) | dismounted |
+| `/player bot1 rejoin` | saved position | kept (`fakePlayerKeepVehicle`) |
+
+Modelled after Carpet TIS Addition's `fakePlayerRejoin`.
 
 ### Fake player load range
 
