@@ -17,6 +17,7 @@ It does not change any vanilla behaviour by default; every feature is behind a r
 | Carpet Mod | Required | https://github.com/gnembon/fabric-carpet |
 | Fabric Loader | Required | https://fabricmc.net/ |
 | Carpet Org Addition | Optional (`batch action` needs it) | https://github.com/fcsailboat/Carpet-Org-Addition |
+| Carpet TIS Addition | Optional (`rejoin` and keeping the vehicle need it) | https://github.com/Fallen-Breath/fabric-carpet-tis-addition |
 
 ## Supported versions
 
@@ -70,9 +71,9 @@ Requires Carpet Org Addition. Runs any `/player` action on a group of bots:
 
 The action list is derived from the `/player` command tree at runtime; run `/playerManager batch action` without arguments to print it.
 
-### Fake player rejoin
+### Fake player rejoin (requires Carpet TIS Addition)
 
-Respawns a bot **at its saved position** (instead of the command position like `spawn`), keeping the vehicle it was riding:
+The `rejoin` command comes from Carpet TIS Addition; this mod only adds the rule that keeps the bot riding its vehicle:
 
 ```
 /player bot1 rejoin
@@ -81,9 +82,9 @@ Respawns a bot **at its saved position** (instead of the command position like `
 | Command | Position | Vehicle |
 | --- | --- | --- |
 | `/player bot1 spawn` | command position (vanilla Carpet) | dismounted |
-| `/player bot1 rejoin` | saved position | kept (`fakePlayerKeepVehicle`) |
+| `/player bot1 rejoin` | saved position (from TIS) | kept (`fakePlayerKeepVehicle`) |
 
-Modelled after Carpet TIS Addition's `fakePlayerRejoin`.
+Without TIS Addition the rule does nothing and never errors.
 
 ### Fake player load range
 

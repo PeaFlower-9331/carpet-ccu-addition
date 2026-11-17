@@ -17,6 +17,7 @@
 | Carpet Mod | 必需 | https://github.com/gnembon/fabric-carpet |
 | Fabric Loader | 必需 | https://fabricmc.net/ |
 | Carpet Org Addition | 可选（`batch action` 需要） | https://github.com/fcsailboat/Carpet-Org-Addition |
+| Carpet TIS Addition | 可选（`rejoin` 与保留载具需要） | https://github.com/Fallen-Breath/fabric-carpet-tis-addition |
 
 ## 支持版本
 
@@ -70,9 +71,9 @@
 
 动作列表由 `/player` 命令树实时生成，`/playerManager batch action`（不带参数）即可查看。
 
-### 假人 rejoin
+### 假人 rejoin（需要 Carpet TIS Addition）
 
-以**存档位置**重新召唤假人（而不是像 `spawn` 那样放到命令执行点），并保留原来乘坐的载具：
+`rejoin` 命令由 Carpet TIS Addition 提供，本模组只补规则：让假人在 rejoin 时**保留原来乘坐的载具**。
 
 ```
 /player bot1 rejoin
@@ -83,9 +84,9 @@
 | 命令 | 位置 | 骑乘 |
 | --- | --- | --- |
 | `/player bot1 spawn` | 命令执行点（Carpet 原版） | 下车 |
-| `/player bot1 rejoin` | 存档位置 | 保留（`fakePlayerKeepVehicle`） |
+| `/player bot1 rejoin` | 存档位置（TIS 提供） | 保留（本模组 `fakePlayerKeepVehicle`） |
 
-写法参考 Carpet TIS Addition 的 `fakePlayerRejoin`。
+没装 TIS Addition 时规则不生效，也不会报错。
 
 ### 假人加载范围
 

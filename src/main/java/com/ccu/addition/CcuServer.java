@@ -6,7 +6,6 @@ import carpet.api.settings.Rule;
 import carpet.utils.Translations;
 import com.ccu.addition.command.BatchPlayerActionCommand;
 import com.ccu.addition.command.LoadRangeCommand;
-import com.ccu.addition.command.RejoinCommand;
 import com.ccu.addition.feature.FakePlayerChunkLoader;
 import com.ccu.addition.feature.MinecartChunkLoader;
 import net.minecraft.server.MinecraftServer;
@@ -42,10 +41,6 @@ public class CcuServer implements CarpetExtension {
 	 */
 	private boolean loadRangeAttached = false;
 
-	/**
-	 * rejoin 是否已并入 Carpet 的 /player 命令。
-	 */
-	private boolean rejoinAttached = false;
 
 	/**
 	 * 挂载尝试次数上限，避免没装 Carpet Org 时每刻重复扫描命令树。
@@ -76,8 +71,6 @@ public class CcuServer implements CarpetExtension {
 		commandsAttached = BatchPlayerActionCommand.attachToBatchCommand(server) > 0;
 		// 把加载范围并进 Carpet 的 /player <名字> load
 		loadRangeAttached = LoadRangeCommand.attachToPlayerCommand(server) > 0;
-		// 把 rejoin 并进 Carpet 的 /player <名字> rejoin
-		rejoinAttached = RejoinCommand.attachToPlayerCommand(server) > 0;
 		// 读取假人加载范围配置（按名字保存，重新召唤后依然生效）
 		FakePlayerChunkLoader.load();
 	}
@@ -97,9 +90,6 @@ public class CcuServer implements CarpetExtension {
 			commandsAttached = BatchPlayerActionCommand.attachToBatchCommand(server) > 0;
 			if (!loadRangeAttached) {
 				loadRangeAttached = LoadRangeCommand.attachToPlayerCommand(server) > 0;
-			}
-			if (!rejoinAttached) {
-				rejoinAttached = RejoinCommand.attachToPlayerCommand(server) > 0;
 			}
 		}
 		// 假人加载范围：按配置给假人维持区块 ticket（内部每 20 刻对账一次）
@@ -133,7 +123,6 @@ public class CcuServer implements CarpetExtension {
 		// 资源重载会重建命令树，需要重新挂载
 		BatchPlayerActionCommand.attachToBatchCommand(server);
 		LoadRangeCommand.attachToPlayerCommand(server);
-		RejoinCommand.attachToPlayerCommand(server);
 	}
 
 	// ---------------------------------------------------------------- 元信息

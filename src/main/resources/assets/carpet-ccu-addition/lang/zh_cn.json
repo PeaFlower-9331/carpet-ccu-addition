@@ -19,8 +19,6 @@
 	"carpet.rule.commandBatchPlayerAction.extra.1": "动作语法完全交给 Carpet 的 /player 解析，因此 /player 支持的动作这里都能用。",
 	"carpet.rule.commandPlayerLoadRange.name": "commandPlayerLoadRange",
 	"carpet.rule.commandPlayerLoadRange.desc": "开启加载范围命令：/player <假人名> load [半径|default]，给单个假人调大加载范围（区块数）。只能调大，无法小于服务器视距。取值 false / true / ops / 0-4，含义与 commandPlayer 相同。",
-	"carpet.rule.commandPlayerRejoin.name": "commandPlayerRejoin",
-	"carpet.rule.commandPlayerRejoin.desc": "控制 /player <名字> rejoin 命令的可用级别，取值同 commandPlayer。",
 	"carpet.rule.commandPlayerLoadRange.extra.0": "例如 /player bot1 load 8；/player bot1 load default 恢复成跟随服务器视距。",
 	"carpet.rule.commandPlayerLoadRange.extra.1": "未设置的假人不额外加载，行为与原版一致。半径不大于服务器视距时不会产生额外效果（原版 ticket 压不下去）。",
 	"carpet.rule.minecartChunkLoader.name": "minecartChunkLoader",
