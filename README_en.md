@@ -39,7 +39,7 @@ All rules live in Carpet's main settings manager: `/carpet <rule> <value>`. Cate
 | Rule | Type | Default | Category | Description |
 | --- | --- | --- | --- | --- |
 | `fakePlayerSpawnPreload` | boolean | `true` | CCU / fake_player | `/player <name> spawn` preloads the profile asynchronously before spawning, avoiding a stall |
-| `fakePlayerKeepVehicle` | boolean | `true` | CCU / fake_player | `/player <name> rejoin` keeps the vehicle the bot was riding |
+| `fakePlayerRejoinKeepRiding` | boolean | `true` | CCU / fake_player | `/player <name> rejoin` keeps the vehicle the bot was riding |
 | `commandPlayerRejoin` | string | `"ops"` | CCU / fake_player / command | Permission level of `rejoin`, same values as `commandPlayer` |
 | `commandBatchPlayerAction` | string | `"ops"` | CCU / fake_player / command | Permission level of the batch action command, same values as `commandPlayer` |
 | `commandPlayerLoadRange` | string | `"ops"` | CCU / fake_player / command | Permission level of the load range command, same values as `commandPlayer` |
@@ -82,7 +82,7 @@ The `rejoin` command comes from Carpet TIS Addition; this mod only adds the rule
 | Command | Position | Vehicle |
 | --- | --- | --- |
 | `/player bot1 spawn` | command position (vanilla Carpet) | dismounted |
-| `/player bot1 rejoin` | saved position (from TIS) | kept (`fakePlayerKeepVehicle`) |
+| `/player bot1 rejoin` | saved position (from TIS) | kept (`fakePlayerRejoinKeepRiding`) |
 
 Without TIS Addition the rule does nothing and never errors.
 

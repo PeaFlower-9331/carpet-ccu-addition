@@ -6,7 +6,7 @@
 | --- | --- | --- | --- | --- |
 | `debugLog` | boolean | `false` | CCU / creative / feature | 输出本模组的详细生命周期日志，仅影响日志详细程度 |
 | `fakePlayerSpawnPreload` | boolean | `true` | CCU / CCU_fake_player / survival / feature | 召唤假人时先异步预加载档案再召唤，避免卡顿 |
-| `fakePlayerKeepVehicle` | boolean | `true` | CCU / CCU_fake_player / survival / feature | 配合 TIS 的 `/player <名字> rejoin`，保留原来乘坐的载具 |
+| `fakePlayerRejoinKeepRiding` | boolean | `true` | CCU / CCU_fake_player / survival / feature | 配合 TIS 的 `/player <名字> rejoin`，保留原来乘坐的载具 |
 | `commandBatchPlayerAction` | string | `"ops"` | CCU / CCU_fake_player / command | `batch action` 的可用级别，取值同 `commandPlayer` |
 | `commandPlayerLoadRange` | string | `"ops"` | CCU / CCU_fake_player / command | `/player <名字> load` 的可用级别，取值同 `commandPlayer` |
 
@@ -228,7 +228,7 @@ Carpet 的 `/player <名字> spawn` 在真正创建假人前要先解析玩家�
 - 想确认效果可以打开 `debugLog`，日志里会记录预加载失败的个例（不影响召唤）。
 ## 假人 rejoin
 
-分类：`CCU` / 假人。规则：`fakePlayerKeepVehicle`（boolean，默认 `true`）。
+分类：`CCU` / 假人。规则：`fakePlayerRejoinKeepRiding`（boolean，默认 `true`）。
 
 ### 命令来自 Carpet TIS Addition
 

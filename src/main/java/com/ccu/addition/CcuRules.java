@@ -62,7 +62,7 @@ public final class CcuRules {
 	 * {@code stopRiding()} 把假人踢下来；本规则取消这一次下坐骑。</p>
 	 */
 	@Rule(categories = {CCU, CCU_FAKE_PLAYER, RuleCategory.SURVIVAL, RuleCategory.FEATURE})
-	public static boolean fakePlayerKeepVehicle = true;
+	public static boolean fakePlayerRejoinKeepRiding = true;
 
 	/**
 	 * 控制批量假人动作命令的可用级别，取值与 Carpet 的 {@code commandPlayer} 一致：

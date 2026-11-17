@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import java.util.Set;
 
 /**
- * {@code /player <名字> rejoin} 与规则 {@code fakePlayerKeepVehicle} 的召唤流程修正。
+ * {@code /player <名字> rejoin} 与规则 {@code fakePlayerRejoinKeepRiding} 的召唤流程修正。
  *
  * <p>写法参考 Carpet TIS Addition 的 {@code fakePlayerRejoin}：{@code rejoin} 会置位
  * {@link RejoinState} 标记并复用 Carpet 的 {@code spawn}，本 mixin 在召唤 lambda 里按标记跳过：</p>
@@ -22,7 +22,7 @@ import java.util.Set;
  * <ol>
  *     <li>{@code teleportTo(...)} —— 否则会传送到命令执行点，而不是存档位置；</li>
  *     <li>{@code snapTo(...)} —— 起始位置吸附会再次把人拽走；</li>
- *     <li>{@code stopRiding()} —— 仅在规则 {@code fakePlayerKeepVehicle} 开启且确实恢复了载具时跳过，
+ *     <li>{@code stopRiding()} —— 仅在规则 {@code fakePlayerRejoinKeepRiding} 开启且确实恢复了载具时跳过，
  *     让假人保持原来的骑乘状态。</li>
  * </ol>
  *
@@ -63,7 +63,7 @@ public abstract class FakePlayerVehicleMixin {
 	)
 	private static boolean ccu$keepVehicleOnRejoin(EntityPlayerMPFake instance) {
 		boolean keepRiding = RejoinState.isRejoin()
-				&& CcuRules.fakePlayerKeepVehicle
+				&& CcuRules.fakePlayerRejoinKeepRiding
 				&& instance.getVehicle() != null;
 		return !keepRiding;
 	}

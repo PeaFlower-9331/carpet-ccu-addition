@@ -33,7 +33,7 @@ public abstract class ServerPlayerVehicleMixin {
 	)
 	private boolean ccu$reuseExistingVehicle(ServerPlayer self, Entity vehicle, boolean force, boolean emitEvent,
 	                                          Operation<Boolean> original) {
-		if (RejoinState.isRejoin() && CcuRules.fakePlayerKeepVehicle && self instanceof EntityPlayerMPFake
+		if (RejoinState.isRejoin() && CcuRules.fakePlayerRejoinKeepRiding && self instanceof EntityPlayerMPFake
 				&& self.level() instanceof ServerLevel level) {
 			Entity existing = level.getEntity(vehicle.getUUID());
 			if (existing != null && existing != vehicle && !existing.isRemoved()) {

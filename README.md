@@ -39,7 +39,7 @@
 | 规则 | 类型 | 默认值 | 分类 | 说明 |
 | --- | --- | --- | --- | --- |
 | `fakePlayerSpawnPreload` | boolean | `true` | CCU / 假人 | `/player <名字> spawn` 时先异步预加载档案再召唤，避免召唤卡顿 |
-| `fakePlayerKeepVehicle` | boolean | `true` | CCU / 假人 | `/player <名字> rejoin` 时保留原来乘坐的载具 |
+| `fakePlayerRejoinKeepRiding` | boolean | `true` | CCU / 假人 | `/player <名字> rejoin` 时保留原来乘坐的载具 |
 | `commandPlayerRejoin` | string | `"ops"` | CCU / 假人 / command | `rejoin` 的可用级别，取值同 `commandPlayer` |
 | `commandBatchPlayerAction` | string | `"ops"` | CCU / 假人 / command | 批量假人动作命令的可用级别，取值同 `commandPlayer` |
 | `commandPlayerLoadRange` | string | `"ops"` | CCU / 假人 / command | 加载范围命令的可用级别，取值同 `commandPlayer` |
@@ -84,7 +84,7 @@
 | 命令 | 位置 | 骑乘 |
 | --- | --- | --- |
 | `/player bot1 spawn` | 命令执行点（Carpet 原版） | 下车 |
-| `/player bot1 rejoin` | 存档位置（TIS 提供） | 保留（本模组 `fakePlayerKeepVehicle`） |
+| `/player bot1 rejoin` | 存档位置（TIS 提供） | 保留（本模组 `fakePlayerRejoinKeepRiding`） |
 
 没装 TIS Addition 时规则不生效，也不会报错。
 
