@@ -22,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * 就先取消这次调用，把档案解析放到后台线程；解析完成后在服务器线程上重新调用一次
  * {@code createFake}（此时档案已在缓存里，Carpet 不会再等待网络）。</p>
  *
- * <p>{@code CCU$REENTER} 用来避免重放时再次拦截自己。</p>
+ * <p>{@code CCU_REENTER} 用来避免重放时再次拦截自己。</p>
  */
 @Mixin(EntityPlayerMPFake.class)
 public abstract class EntityPlayerMPFakeMixin {

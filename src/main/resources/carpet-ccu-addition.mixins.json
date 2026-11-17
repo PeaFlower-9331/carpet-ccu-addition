@@ -5,7 +5,9 @@
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
 		"BuddingAmethystBlockMixin",
-		"EntityPlayerMPFakeMixin"
+		"EntityPlayerMPFakeMixin",
+		"FakePlayerVehicleMixin",
+		"ServerPlayerVehicleMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

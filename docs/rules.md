@@ -6,6 +6,7 @@
 | --- | --- | --- | --- | --- |
 | `debugLog` | boolean | `false` | CCU / creative / feature | 输出本模组的详细生命周期日志，仅影响日志详细程度 |
 | `fakePlayerSpawnPreload` | boolean | `true` | CCU / CCU_fake_player / survival / feature | 召唤假人时先异步预加载档案再召唤，避免卡顿 |
+| `fakePlayerKeepVehicle` | boolean | `true` | CCU / CCU_fake_player / survival / feature | 假人重登时保留之前乘坐的载具（不做任何位移） |
 | `commandBatchPlayerAction` | string | `"ops"` | CCU / CCU_fake_player / command | `batch action` 的可用级别，取值同 `commandPlayer` |
 | `commandPlayerLoadRange` | string | `"ops"` | CCU / CCU_fake_player / command | `/player <名字> load` 的可用级别，取值同 `commandPlayer` |
 
@@ -225,6 +226,45 @@ Carpet 的 `/player <名字> spawn` 在真正创建假人前要先解析玩家�
 - 只影响**召唤时机**，不改变假人的 UUID、皮肤、权限等任何数据。
 - 预加载在后台线程执行，不会阻塞服务器刻。
 - 想确认效果可以打开 `debugLog`，日志里会记录预加载失败的个例（不影响召唤）。
+## 假人保留载具
+
+分类：`CCU` / 假人。规则：`fakePlayerKeepVehicle`（boolean，默认 `true`）。
+
+开启后，假人重登（`/player <名字> spawn`）时**保持原来坐在载具上的状态**，并且载具不会被挪动。
+
+### 背景：Carpet 在 1.4.188 加了「下车」
+
+- [Issue #2110](https://github.com/gnembon/fabric-carpet/issues/2110)：假人召唤后丢失背包物品；
+- 修复提交 `f2b7aaf2`（2025-10-12）在召唤流程里加了 `loadPlayerData(instance)`，把存档读回来；
+- 紧接着 `6654b539`（2025-10-14）把 `placeNewPlayer` 提前，并加了
+  `instance.stopRiding(); // otherwise the created fake player will be on the vehicle`。
+- 这两个提交随 **1.4.188**（2025-10-16）发布，所以 1.4.188 起假人重登一定会被踢下載具。
+
+### 实现
+
+参考 Carpet Org Addition 的「原始位置生成」写法，在 Carpet 的召唤 lambda 里**跳过三个会破坏骑乘状态的调用**：
+
+| 跳过 | 原因 |
+| --- | --- |
+| `stopRiding()` | Carpet 读完存档后主动踢人下车 |
+| `teleportTo(...)` | 传送到召唤点，传送本身会让乘客下车 |
+| `snapTo(...)` | 起始位置吸附会再次把人拽走 |
+
+另外在 `ServerPlayer#loadAndSpawnParentVehicle` 里优先复用世界里**已存在**的同 UUID 载具，
+避免「旧车还在 + 新车被骑」的重复载具。
+
+触发条件只有一条：这次召唤确实从存档恢复了载具（`getVehicle() != null`）。没坐载具的假人行为与 Carpet 原版完全一致。
+
+### 为什么不会造成载具偏移
+
+代码里没有任何一行移动载具或假人：不传送载具、不调整座位、不改坐标。载具保持在存档位置，
+假人则被放回它自己的座位上，所以不存在「挤压载具」「贴轨/贴地导致坐标变化」的问题。
+
+### 注意
+
+- `/player <名字> dismount` 仍然照常有效（只跳过召唤流程里的那一次下坐骑）。
+- 关闭规则即恢复 Carpet 1.4.188 之后的行为（重登后下车、出现在召唤点）。
+
 ## 加规则的三步
 
 1. `CcuRules` 加带 `@Rule` 的 `public static` 字段；

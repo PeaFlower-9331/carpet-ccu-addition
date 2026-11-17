@@ -38,6 +38,7 @@
 | 规则 | 类型 | 默认值 | 分类 | 说明 |
 | --- | --- | --- | --- | --- |
 | `fakePlayerSpawnPreload` | boolean | `true` | CCU / 假人 | `/player <名字> spawn` 时先异步预加载档案再召唤，避免召唤卡顿 |
+| `fakePlayerKeepVehicle` | boolean | `true` | CCU / 假人 | 假人重登时保留之前乘坐的载具：跳过 Carpet 的下坐骑与传送，载具全程不动 |
 | `commandBatchPlayerAction` | string | `"ops"` | CCU / 假人 / command | 批量假人动作命令的可用级别，取值同 `commandPlayer` |
 | `commandPlayerLoadRange` | string | `"ops"` | CCU / 假人 / command | 加载范围命令的可用级别，取值同 `commandPlayer` |
 | `minecartChunkLoader` | boolean | `false` | CCU / 矿车 | 矿车加载器总开关 |

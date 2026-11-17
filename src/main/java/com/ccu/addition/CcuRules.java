@@ -56,6 +56,15 @@ public final class CcuRules {
 	public static boolean fakePlayerSpawnPreload = true;
 
 	/**
+	 * 假人重登时保留之前乘坐的载具。
+	 *
+	 * <p>Carpet 在召唤时会先加载存档数据（载具会被重新生成并骑上），紧接着主动
+	 * {@code stopRiding()} 把假人踢下来；本规则取消这一次下坐骑。</p>
+	 */
+	@Rule(categories = {CCU, CCU_FAKE_PLAYER, RuleCategory.SURVIVAL, RuleCategory.FEATURE})
+	public static boolean fakePlayerKeepVehicle = true;
+
+	/**
 	 * 控制批量假人动作命令的可用级别，取值与 Carpet 的 {@code commandPlayer} 一致：
 	 * false / true / ops / 0 / 1 / 2 / 3 / 4。
 	 */
