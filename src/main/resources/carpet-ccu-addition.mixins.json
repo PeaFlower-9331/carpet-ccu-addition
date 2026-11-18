@@ -6,8 +6,7 @@
 	"mixins": [
 		"BuddingAmethystBlockMixin",
 		"EntityPlayerMPFakeMixin",
-		"FakePlayerVehicleMixin",
-		"ServerPlayerVehicleMixin"
+		"FakePlayerVehicleMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
