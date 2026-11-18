@@ -13,10 +13,18 @@ import java.lang.reflect.Field;
  *
  * <p>读取走反射 + {@link FabricLoader#isModLoaded} 判断，所以没装 TIS 时完全不碰它的类，
  * 也不会因为缺少依赖而报错——此时 {@link #isRejoin()} 恒为 false，本模组的规则自然不生效。</p>
+ *
+ * <p>另一个关键点：TIS 的标记只活在命令执行的那个线程/调用栈里，而 Carpet 的 spawn 主体跑在
+ * {@code whenCompleteAsync} 回调里、我们的档案预加载还会把 {@code createFake} 再推迟一次。
+ * 所以 {@link #runWith(boolean, Runnable)} 除了设置本模组的标记，也会同步设置 <em>TIS 的</em>
+ * ThreadLocal——否则重放时 TIS 自己的 mixin 会以为「这次不是 rejoin」。</p>
  */
 public final class RejoinState {
 
-	private static final String TIS_MOD_ID = "carpettisaddition";
+	/**
+	 * TIS 的 mod id 在不同版本里出现过两种写法，两个都认。
+	 */
+	private static final String[] TIS_MOD_IDS = {"carpet-tis-addition", "carpettisaddition"};
 	private static final String TIS_HELPER_CLASS =
 			"carpettisaddition.helpers.carpet.tweaks.command.fakePlayerRejoin.FakePlayerRejoinHelper";
 
@@ -35,41 +43,73 @@ public final class RejoinState {
 		if (LOCAL.get()) {
 			return true;
 		}
-		return readTisFlag();
+		return tisFlag();
 	}
 
 	public static void begin() {
 		LOCAL.set(Boolean.TRUE);
+		setTis(true);
 	}
 
 	public static void end() {
 		LOCAL.remove();
+		setTis(false);
 	}
 
 	/**
-	 * 带着指定标记执行一段逻辑，结束后恢复原值。
-	 *
-	 * <p>召唤预加载会把 {@code createFake} 推迟到档案解析完成之后执行，Carpet 的 spawn 主体也跑在
-	 * {@code whenCompleteAsync} 回调里，都跨了任务边界，所以需要显式把标记传过去。</p>
+	 * 带着指定标记执行一段逻辑，结束后恢复原值（本模组标记与 TIS 标记一起处理）。
 	 */
 	public static void runWith(boolean value, Runnable action) {
-		boolean previous = LOCAL.get();
+		boolean previousLocal = LOCAL.get();
+		boolean previousTis = tisFlag();
 		LOCAL.set(value);
+		setTis(value);
 		try {
 			action.run();
 		} finally {
-			if (previous) {
+			if (previousLocal) {
 				LOCAL.set(Boolean.TRUE);
 			} else {
 				LOCAL.remove();
 			}
+			setTis(previousTis);
 		}
 	}
 
-	private static boolean readTisFlag() {
-		if (!FabricLoader.getInstance().isModLoaded(TIS_MOD_ID)) {
+	private static boolean tisFlag() {
+		if (!tisLoaded()) {
 			return false;
 		}
+		ThreadLocal<Boolean> flag = resolveTisFlag();
+		return flag != null && Boolean.TRUE.equals(flag.get());
+	}
+
+	private static void setTis(boolean value) {
+		if (!tisLoaded()) {
+			return;
+		}
+		ThreadLocal<Boolean> flag = resolveTisFlag();
+		if (flag == null) {
+			return;
+		}
+		com.ccu.addition.CcuServer.debug("把 TIS 的 rejoin 标记设为 %s", value);
+		if (value) {
+			flag.set(Boolean.TRUE);
+		} else {
+			flag.remove();
+		}
+	}
+
+	private static boolean tisLoaded() {
+		for (String id : TIS_MOD_IDS) {
+			if (FabricLoader.getInstance().isModLoaded(id)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static ThreadLocal<Boolean> resolveTisFlag() {
 		if (!tisResolved) {
 			tisResolved = true;
 			try {
@@ -81,11 +121,13 @@ public final class RejoinState {
 					ThreadLocal<Boolean> casted = (ThreadLocal<Boolean>) threadLocal;
 					tisFlag = casted;
 				}
-			} catch (Throwable ignored) {
-				// TIS 版本差异或字段改名：静默降级成「不是 rejoin」
+			} catch (Throwable e) {
+				// TIS 版本差异或字段改名：降级成「不是 rejoin」，并打日志便于排查
+				com.ccu.addition.CcuServer.LOGGER.warn("读取 TIS 的 rejoin 标记失败：{}", e.toString());
 				tisFlag = null;
 			}
 		}
-		return tisFlag != null && Boolean.TRUE.equals(tisFlag.get());
+		return tisFlag;
 	}
 }
+

@@ -32,7 +32,7 @@ import java.util.Set;
  *     由于该附属的命令名允许玩家自定义，这里不硬编码名字，而是在命令树建好后按结构查找
  *     「拥有 {@code batch} 子节点，且 {@code batch} 下有 {@code spawn} 与 {@code kill}」的根节点再挂载；
  *     找不到就安静跳过（例如服务器没装该附属）。</li>
- *     <li><b>独立命令</b>：{@code /ccuplayer <目标> <动作>}，作为没有安装该附属时的等价入口。</li>
+ *     <li>本模组不注册独立命令；没有安装 Carpet Org Addition 时该功能不可用。</li>
  * </ol>
  *
  * <p>动作不自行解析，而是转交 Carpet 的 {@code /player} 命令执行，因此
@@ -138,7 +138,7 @@ public final class BatchPlayerActionCommand {
 		for (String action : actions) {
 			source.sendSuccess(() -> Component.literal(" - " + action), false);
 		}
-		source.sendSuccess(() -> Component.literal("用法：/ccuplayer <目标> <动作>，例：/ccuplayer bot use continuous"), false);
+		source.sendSuccess(() -> Component.literal("用法：/playerManager batch action <目标> <动作>，例：/playerManager batch action bot use continuous"), false);
 		return actions.size();
 	}
 

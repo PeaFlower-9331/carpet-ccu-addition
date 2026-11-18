@@ -66,7 +66,8 @@ public abstract class EntityPlayerMPFakeMixin {
 	                                                  double yaw, double pitch, ResourceKey<Level> dimensionId,
 	                                                  GameType gamemode, boolean flying,
 	                                                  CallbackInfoReturnable<Boolean> cir) {
-		if (!CcuRules.fakePlayerSpawnPreload || CCU_REENTER.get()) {
+		// rejoin 不推迟：TIS 的标记活在本线程调用栈里，推迟重放会丢掉它
+		if (!CcuRules.fakePlayerSpawnPreload || CCU_REENTER.get() || RejoinState.isRejoin()) {
 			return;
 		}
 		if (!FakePlayerSpawnPreloader.shouldPreload(username)) {
