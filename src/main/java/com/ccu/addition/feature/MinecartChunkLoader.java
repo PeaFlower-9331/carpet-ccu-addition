@@ -15,6 +15,7 @@ import net.minecraft.server.level.TicketType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.nio.charset.StandardCharsets;
@@ -86,6 +87,13 @@ public final class MinecartChunkLoader {
 	 */
 	private static final int ANCHOR_VALIDATE_CYCLES = 12;
 
+	/**
+	 * 锚点保活窗口：最近这么久（2400 刻）内确认过的矿车，即使这一轮判定不到铁轨，
+	 * 也按锚点位置继续挂票。机器的活塞推进阶段、区块刚被卸载等情况都靠它兜住；
+	 * 超过窗口还没重新确认，就不再维持（票 15 秒后自然过期）。
+	 */
+	private static final int ANCHOR_KEEPALIVE_TICKS = 2400;
+
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
 	private static final TicketType MINECART_TICKET = new TicketType(
@@ -130,6 +138,16 @@ public final class MinecartChunkLoader {
 	private static int lastGraceHits = -1;
 
 	/**
+	 * 上一轮「被活塞带动」的车辆数，同样参与「状态变化」判断。
+	 */
+	private static int lastPistonHits = -1;
+
+	/**
+	 * 上一轮需要补票重新加载的锚点块数，用来只在发生变化时打一行日志。
+	 */
+	private static int lastKeepAlive = -1;
+
+	/**
 	 * 统计轮次，用于心跳节流。
 	 */
 	private static int cycles = 0;
@@ -160,6 +178,11 @@ public final class MinecartChunkLoader {
 
 	private static boolean anchorsDirty = false;
 	private static int lastAnchorSave = -1;
+
+	/**
+	 * 矿车 UUID -> 最近一次成功续票的游戏刻，供保活窗口判断。
+	 */
+	private static final Map<UUID, Integer> LAST_MATCHED = new HashMap<>();
 
 	/**
 	 * 锚点记录：维度用 id 字符串保存，避免跨版本（1.21.10 的 ResourceLocation / 1.21.11 的 Identifier）差异。
@@ -198,6 +221,7 @@ public final class MinecartChunkLoader {
 		int typeHits = 0;
 		int matched = 0;
 		int graceHits = 0;
+		int pistonHits = 0;
 		List<String> hitPositions = new ArrayList<>();
 		List<String> misses = new ArrayList<>();
 
@@ -218,24 +242,34 @@ public final class MinecartChunkLoader {
 				if (onRail) {
 					LAST_ON_RAIL.put(cartId, now);
 				} else {
-					// 这一轮判定不到铁轨：如果最近 RAIL_GRACE_TICKS 内确认过，就按宽限继续续票。
-					// 移动中的矿车会短暂「悬空」（跨方块、上坡、被推离、铁轨刚被拆），
-					// 靠宽限撑过去，避免断票 -> 区块卸载 -> 矿车被卸载 -> 再也扫不到。
+					// 这一轮判定不到铁轨：可能是短暂的「悬空」（跨方块、上坡、被推离），
+					// 也可能整台机器正被活塞推着走——此时方块会临时变成 moving_piston。
+					// 前者靠宽限撑过去，后者按「已被认定的加载器矿车」继续续票。
 					Integer lastSeen = LAST_ON_RAIL.get(cartId);
-					if (lastSeen == null || now - lastSeen > RAIL_GRACE_TICKS) {
+					boolean withinGrace = lastSeen != null && now - lastSeen <= RAIL_GRACE_TICKS;
+					boolean carriedByPiston = !withinGrace
+							&& ANCHORS.containsKey(cartId)
+							&& isOnMovingPiston(level, entity);
+					if (!withinGrace && !carriedByPiston) {
 						// 类型对了但不在配置的铁轨上——最常见的原因就是铁轨 id 写错或漏配
 						if (CcuRules.debugLog && misses.size() < MAX_SAMPLES) {
 							misses.add(describe(level, entity));
 						}
 						continue;
 					}
-					graceHits++;
+					if (withinGrace) {
+						graceHits++;
+					} else {
+						// 被活塞带动同样算一次确认，宽限从这一轮重新计时
+						LAST_ON_RAIL.put(cartId, now);
+						pistonHits++;
+					}
 				}
 
 				// +2：把「半径 R 内实体刻」换算成 addTicketWithRadius 需要的 ticket 半径
 				level.getChunkSource().addTicketWithRadius(MINECART_TICKET, entity.chunkPosition(), ticketRadius);
 				matched++;
-				recordAnchor(level, entity);
+				recordAnchor(level, entity, now);
 				if (CcuRules.debugLog && hitPositions.size() < MAX_SAMPLES) {
 					String where = entity.blockPosition().toShortString();
 					if (!hitPositions.contains(where)) {
@@ -250,7 +284,7 @@ public final class MinecartChunkLoader {
 
 		saveAnchorsIfDue(now);
 
-		if (!shouldLog(typeHits, matched, graceHits)) {
+		if (!shouldLog(typeHits, matched, graceHits, pistonHits)) {
 			return;
 		}
 
@@ -261,10 +295,11 @@ public final class MinecartChunkLoader {
 			return;
 		}
 
-		if (matched > 0 && graceHits > 0) {
+		if (matched > 0 && (graceHits > 0 || pistonHits > 0)) {
 			CcuServer.debug("矿车加载器：扫描 %d 个实体，类型命中 %d，铁轨命中 %d 并已续票"
-							+ "（其中 %d 辆靠宽限判定）（半径 %d 区块 → ticket 半径 %d / 等级 %d）；续票位置：%s",
-					scanned, typeHits, matched, graceHits, range, ticketRadius,
+							+ "（其中 %d 辆靠宽限判定、%d 辆正被活塞带动）"
+							+ "（半径 %d 区块 → ticket 半径 %d / 等级 %d）；续票位置：%s",
+					scanned, typeHits, matched, graceHits, pistonHits, range, ticketRadius,
 					FULL_CHUNK_LEVEL - ticketRadius, joinSamples(hitPositions));
 		} else if (matched > 0) {
 			CcuServer.debug("矿车加载器：扫描 %d 个实体，类型命中 %d，铁轨命中 %d 并已续票"
@@ -285,19 +320,22 @@ public final class MinecartChunkLoader {
 	/**
 	 * 诊断输出节流：命中数变化立刻输出，否则每 {@link #HEARTBEAT_CYCLES} 轮输出一次。
 	 */
-	private static boolean shouldLog(int typeHits, int matched, int graceHits) {
+	private static boolean shouldLog(int typeHits, int matched, int graceHits, int pistonHits) {
 		if (!CcuRules.debugLog) {
 			// 关着的时候不维护状态：这样重新打开 debugLog 后第一轮就会立刻输出一次
 			lastMatched = -1;
 			lastTypeHits = -1;
 			lastGraceHits = -1;
+			lastPistonHits = -1;
 			return false;
 		}
 		cycles++;
-		boolean changed = matched != lastMatched || typeHits != lastTypeHits || graceHits != lastGraceHits;
+		boolean changed = matched != lastMatched || typeHits != lastTypeHits
+				|| graceHits != lastGraceHits || pistonHits != lastPistonHits;
 		lastMatched = matched;
 		lastTypeHits = typeHits;
 		lastGraceHits = graceHits;
+		lastPistonHits = pistonHits;
 		return changed || cycles % HEARTBEAT_CYCLES == 0;
 	}
 
@@ -338,6 +376,7 @@ public final class MinecartChunkLoader {
 	public static void loadAnchors() {
 		ANCHORS.clear();
 		BOOTSTRAPPING.clear();
+		LAST_MATCHED.clear();
 		bootstrapDeadline = -1;
 		anchorsDirty = false;
 
@@ -438,6 +477,7 @@ public final class MinecartChunkLoader {
 					} else {
 						CcuServer.debug("矿车加载器：锚点区块已加载但没有这辆矿车，丢弃锚点 %s @ %s", id, anchor.pos());
 						ANCHORS.remove(id);
+						LAST_MATCHED.remove(id);
 						anchorsDirty = true;
 					}
 					iterator.remove();
@@ -447,6 +487,7 @@ public final class MinecartChunkLoader {
 					CcuServer.debug("矿车加载器：等了 %d 刻仍未加载出锚点区块 %s，丢弃锚点",
 							BOOTSTRAP_GRACE_TICKS, anchor.pos());
 					ANCHORS.remove(id);
+					LAST_MATCHED.remove(id);
 					anchorsDirty = true;
 					iterator.remove();
 					continue;
@@ -455,6 +496,30 @@ public final class MinecartChunkLoader {
 				level.getChunkSource().addTicketWithRadius(MINECART_TICKET, anchor.pos(), ticketRadius);
 			}
 		}
+
+		// 锚点保活：最近 ANCHOR_KEEPALIVE_TICKS 内确认过的矿车，按锚点位置继续挂票。
+		// 这样即使某几轮判定不到铁轨（机器正被活塞推着走、区块刚被卸载），票也不会断，
+		// 避免「断票 -> 区块卸载 -> 矿车实体一起被卸载 -> 再也扫不到」的连锁。
+		int keepAlive = 0;
+		for (Map.Entry<UUID, Anchor> entry : ANCHORS.entrySet()) {
+			if (BOOTSTRAPPING.contains(entry.getKey())) {
+				continue;
+			}
+			Integer lastMatch = LAST_MATCHED.get(entry.getKey());
+			if (lastMatch == null || now - lastMatch > ANCHOR_KEEPALIVE_TICKS) {
+				continue;
+			}
+			ServerLevel level = findLevel(server, entry.getValue().dimensionId());
+			if (level == null) {
+				continue;
+			}
+			level.getChunkSource().addTicketWithRadius(MINECART_TICKET, entry.getValue().pos(), ticketRadius);
+			keepAlive++;
+		}
+		if (keepAlive > 0 && keepAlive != lastKeepAlive) {
+			CcuServer.debug("矿车加载器：%d 个锚点按记忆维持加载", keepAlive);
+		}
+		lastKeepAlive = keepAlive;
 
 		// 定期校验：区块已加载却找不到对应矿车的锚点，清掉，避免配置文件无限增长
 		if (now % (REFRESH_INTERVAL_TICKS * ANCHOR_VALIDATE_CYCLES) == 0) {
@@ -475,6 +540,7 @@ public final class MinecartChunkLoader {
 					continue;
 				}
 				if (level.getEntity(entry.getKey()) == null) {
+					LAST_MATCHED.remove(entry.getKey());
 					iterator.remove();
 					removedAny = true;
 				}
@@ -488,9 +554,10 @@ public final class MinecartChunkLoader {
 	/**
 	 * 记录 / 更新一辆成功续票的矿车。位置变化（矿车在动）时才标脏，避免无谓写盘。
 	 */
-	private static void recordAnchor(ServerLevel level, Entity cart) {
+	private static void recordAnchor(ServerLevel level, Entity cart, int now) {
 		UUID id = cart.getUUID();
 		BOOTSTRAPPING.remove(id);
+		LAST_MATCHED.put(id, now);
 		Anchor anchor = new Anchor(DimensionIds.of(level.dimension()), cart.chunkPosition());
 		Anchor previous = ANCHORS.put(id, anchor);
 		if (!anchor.equals(previous)) {
@@ -515,6 +582,19 @@ public final class MinecartChunkLoader {
 		BlockPos pos = entity.blockPosition();
 		return matchesRail(level.getBlockState(pos), rails)
 				|| matchesRail(level.getBlockState(pos.below()), rails);
+	}
+
+	/**
+	 * 矿车是否正处在被活塞推动的方块里。
+	 *
+	 * <p>活塞动画期间，被推的方块（连同上面的铁轨）会临时变成 {@code moving_piston}，
+	 * 这时 {@link #isOnRail} 必然判不到。对于已经被认定过的加载器矿车（有锚点），
+	 * 这属于「机器在走」，不是「离开铁轨」，应当继续续票。</p>
+	 */
+	private static boolean isOnMovingPiston(ServerLevel level, Entity entity) {
+		BlockPos pos = entity.blockPosition();
+		return level.getBlockState(pos).is(Blocks.MOVING_PISTON)
+				|| level.getBlockState(pos.below()).is(Blocks.MOVING_PISTON);
 	}
 
 	private static boolean matchesRail(BlockState state, Set<String> rails) {
