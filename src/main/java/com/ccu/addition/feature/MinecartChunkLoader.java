@@ -88,11 +88,20 @@ public final class MinecartChunkLoader {
 	private static final int ANCHOR_VALIDATE_CYCLES = 12;
 
 	/**
-	 * 锚点保活窗口：最近这么久（2400 刻）内确认过的矿车，即使这一轮判定不到铁轨，
-	 * 也按锚点位置继续挂票。机器的活塞推进阶段、区块刚被卸载等情况都靠它兜住；
-	 * 超过窗口还没重新确认，就不再维持（票 15 秒后自然过期）。
+	 * 锚点保活窗口：最近 2 分钟（真实时间）内确认过的矿车，即使这一轮判定不到铁轨，
+	 * 也按锚点位置继续挂票。机器的活塞推进阶段、区块刚被卸载等情况都靠它兜住。
+	 *
+	 * <p>用真实时间而不是游戏刻：tick rate 调到 100 时，按刻算的窗口会被压缩 5 倍。</p>
 	 */
-	private static final int ANCHOR_KEEPALIVE_TICKS = 2400;
+	private static final long ANCHOR_KEEPALIVE_MS = 120_000L;
+
+	/**
+	 * 锚点过期：连续 30 秒没有被识别（既不在指定铁轨上、也没被活塞带动）就丢弃锚点并落盘。
+	 *
+	 * <p>这样「铁轨被拆 / 车被推离」的锚点会在运行期间清掉，不会留到下次重启时白加载一次。
+	 * 判定放在每轮扫描之后，保证「这一轮刚好匹配上」的车不会被误删。</p>
+	 */
+	private static final long ANCHOR_EXPIRE_MS = 30_000L;
 
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
@@ -180,9 +189,9 @@ public final class MinecartChunkLoader {
 	private static int lastAnchorSave = -1;
 
 	/**
-	 * 矿车 UUID -> 最近一次成功续票的游戏刻，供保活窗口判断。
+	 * 矿车 UUID -> 最近一次成功续票的时刻（毫秒时间戳），供保活与过期判断。
 	 */
-	private static final Map<UUID, Integer> LAST_MATCHED = new HashMap<>();
+	private static final Map<UUID, Long> LAST_MATCHED = new HashMap<>();
 
 	/**
 	 * 锚点记录：维度用 id 字符串保存，避免跨版本（1.21.10 的 ResourceLocation / 1.21.11 的 Identifier）差异。
@@ -213,9 +222,10 @@ public final class MinecartChunkLoader {
 		int range = Math.max(MIN_RANGE, Math.min(MAX_RANGE, CcuRules.minecartLoaderRange));
 		int ticketRadius = range + 2;
 		int now = server.getTickCount();
+		long nowMs = System.currentTimeMillis();
 
 		// 先把上次记下来的锚点区块加载起来（重启/卸载后自举），再走正常扫描
-		updateAnchors(server, now, ticketRadius);
+		updateAnchors(server, now, nowMs, ticketRadius);
 
 		int scanned = 0;
 		int typeHits = 0;
@@ -269,7 +279,7 @@ public final class MinecartChunkLoader {
 				// +2：把「半径 R 内实体刻」换算成 addTicketWithRadius 需要的 ticket 半径
 				level.getChunkSource().addTicketWithRadius(MINECART_TICKET, entity.chunkPosition(), ticketRadius);
 				matched++;
-				recordAnchor(level, entity, now);
+				recordAnchor(level, entity, nowMs);
 				if (CcuRules.debugLog && hitPositions.size() < MAX_SAMPLES) {
 					String where = entity.blockPosition().toShortString();
 					if (!hitPositions.contains(where)) {
@@ -282,6 +292,8 @@ public final class MinecartChunkLoader {
 		// 清理长期没再出现过的矿车（宽限早已失效，留着没用），避免映射随矿车数量无限增长
 		LAST_ON_RAIL.entrySet().removeIf(entry -> now - entry.getValue() > RAIL_GRACE_TICKS * 2);
 
+		// 过期判定放在扫描之后：本轮刚匹配上的车不会被误删
+		expireAnchors(nowMs);
 		saveAnchorsIfDue(now);
 
 		if (!shouldLog(typeHits, matched, graceHits, pistonHits)) {
@@ -452,7 +464,7 @@ public final class MinecartChunkLoader {
 	 * <p>区块真正加载出来后就能判断矿车还在不在：在就交给正常扫描接管，不在就丢掉这条锚点。
 	 * 等待超过 {@link #BOOTSTRAP_GRACE_TICKS} 还加载不出来的也丢掉，避免永久吊着一块区块。</p>
 	 */
-	private static void updateAnchors(MinecraftServer server, int now, int ticketRadius) {
+	private static void updateAnchors(MinecraftServer server, int now, long nowMs, int ticketRadius) {
 		if (bootstrapDeadline < 0) {
 			bootstrapDeadline = now + BOOTSTRAP_GRACE_TICKS;
 		}
@@ -505,8 +517,8 @@ public final class MinecartChunkLoader {
 			if (BOOTSTRAPPING.contains(entry.getKey())) {
 				continue;
 			}
-			Integer lastMatch = LAST_MATCHED.get(entry.getKey());
-			if (lastMatch == null || now - lastMatch > ANCHOR_KEEPALIVE_TICKS) {
+			Long lastMatch = LAST_MATCHED.get(entry.getKey());
+			if (lastMatch == null || nowMs - lastMatch > ANCHOR_KEEPALIVE_MS) {
 				continue;
 			}
 			ServerLevel level = findLevel(server, entry.getValue().dimensionId());
@@ -552,12 +564,47 @@ public final class MinecartChunkLoader {
 	}
 
 	/**
+	 * 锚点过期：连续 {@link #ANCHOR_EXPIRE_MS} 没有被识别的锚点丢弃并落盘。
+	 *
+	 * <p>只处理已经被观察到过的锚点；重启后刚读回来的锚点先开始计时，留出被认领的机会。</p>
+	 */
+	private static void expireAnchors(long nowMs) {
+		boolean removed = false;
+		Iterator<Map.Entry<UUID, Anchor>> iterator = ANCHORS.entrySet().iterator();
+		while (iterator.hasNext()) {
+			Map.Entry<UUID, Anchor> entry = iterator.next();
+			if (BOOTSTRAPPING.contains(entry.getKey())) {
+				// 自举中：还没被观察到，不参与过期判定
+				continue;
+			}
+			Long lastMatch = LAST_MATCHED.get(entry.getKey());
+			if (lastMatch == null) {
+				// 重启后刚读回来：从现在开始计时
+				LAST_MATCHED.put(entry.getKey(), nowMs);
+				continue;
+			}
+			if (nowMs - lastMatch < ANCHOR_EXPIRE_MS) {
+				continue;
+			}
+			CcuServer.debug("矿车加载器：矿车 %s 已连续 %d 秒没有被识别（不在指定铁轨上、也没被活塞带动），丢弃锚点 @ %s",
+					entry.getKey(), ANCHOR_EXPIRE_MS / 1000, entry.getValue().pos());
+			LAST_ON_RAIL.remove(entry.getKey());
+			LAST_MATCHED.remove(entry.getKey());
+			iterator.remove();
+			removed = true;
+		}
+		if (removed) {
+			anchorsDirty = true;
+		}
+	}
+
+	/**
 	 * 记录 / 更新一辆成功续票的矿车。位置变化（矿车在动）时才标脏，避免无谓写盘。
 	 */
-	private static void recordAnchor(ServerLevel level, Entity cart, int now) {
+	private static void recordAnchor(ServerLevel level, Entity cart, long nowMs) {
 		UUID id = cart.getUUID();
 		BOOTSTRAPPING.remove(id);
-		LAST_MATCHED.put(id, now);
+		LAST_MATCHED.put(id, nowMs);
 		Anchor anchor = new Anchor(DimensionIds.of(level.dimension()), cart.chunkPosition());
 		Anchor previous = ANCHORS.put(id, anchor);
 		if (!anchor.equals(previous)) {
