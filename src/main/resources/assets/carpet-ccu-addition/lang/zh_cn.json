@@ -24,7 +24,7 @@
 	"carpet.rule.minecartChunkLoader.name": "minecartChunkLoader",
 	"carpet.rule.minecartChunkLoader.desc": "开启矿车加载器：指定种类的矿车停在指定种类的铁轨上时，每 5 秒给它周围的区块挂一次加载票，保持加载与实体刻。",
 	"carpet.rule.minecartChunkLoader.extra.0": "还需配合 minecartLoaderTypes（矿车种类）、minecartLoaderRails（铁轨种类）、minecartLoaderRange（半径）。",
-	"carpet.rule.minecartChunkLoader.extra.1": "加载票 5 秒后过期：矿车开走、离开铁轨或消失后，最多 5 秒自动卸载，不会留下残留。",
+	"carpet.rule.minecartChunkLoader.extra.1": "加载票 15 秒后过期（续票间隔 5 秒，特意留两轮容错）：矿车开走、离开铁轨或消失后，最多 15 秒自动卸载，不会留下残留。",
 	"carpet.rule.minecartLoaderTypes.name": "minecartLoaderTypes",
 	"carpet.rule.minecartLoaderTypes.desc": "触发加载的矿车种类，逗号分隔，可省略 minecraft: 前缀，例如 minecart,chest_minecart,hopper_minecart。",
 	"carpet.rule.minecartLoaderRails.name": "minecartLoaderRails",

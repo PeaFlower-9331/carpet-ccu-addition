@@ -73,6 +73,8 @@ public class CcuServer implements CarpetExtension {
 		loadRangeAttached = LoadRangeCommand.attachToPlayerCommand(server) > 0;
 		// 读取假人加载范围配置（按名字保存，重新召唤后依然生效）
 		FakePlayerChunkLoader.load();
+		// 读取矿车锚点：重启后先把这些矿车所在区块加载起来，否则扫不到实体、加载器会一直空转
+		MinecartChunkLoader.loadAnchors();
 	}
 
 	@Override
@@ -115,6 +117,8 @@ public class CcuServer implements CarpetExtension {
 	@Override
 	public void onServerClosed(MinecraftServer server) {
 		debug("服务器关闭");
+		// 关服前把矿车锚点落盘，避免最后几轮的变更丢失
+		MinecartChunkLoader.saveAnchors();
 	}
 
 	@Override

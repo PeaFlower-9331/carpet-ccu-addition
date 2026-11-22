@@ -24,7 +24,7 @@
 	"carpet.rule.minecartChunkLoader.name": "minecartChunkLoader",
 	"carpet.rule.minecartChunkLoader.desc": "Enables the minecart chunk loader: a matching minecart standing on a matching rail gets a loading ticket every 5 seconds, keeping the surrounding chunks loaded and ticking.",
 	"carpet.rule.minecartChunkLoader.extra.0": "Configure minecartLoaderTypes (cart types), minecartLoaderRails (rail types) and minecartLoaderRange (radius).",
-	"carpet.rule.minecartChunkLoader.extra.1": "Tickets expire after 5 seconds: once the cart leaves the rail or disappears, chunks unload within 5 seconds - nothing persists.",
+	"carpet.rule.minecartChunkLoader.extra.1": "Tickets expire after 15 seconds (refreshed every 5 seconds on purpose, two cycles of slack): once the cart leaves the rail or disappears, chunks unload within 15 seconds - nothing persists.",
 	"carpet.rule.minecartLoaderTypes.name": "minecartLoaderTypes",
 	"carpet.rule.minecartLoaderTypes.desc": "Comma separated minecart types that trigger loading, e.g. minecart,chest_minecart,hopper_minecart. The minecraft: prefix is optional.",
 	"carpet.rule.minecartLoaderRails.name": "minecartLoaderRails",
