@@ -54,9 +54,16 @@ import java.util.UUID;
 public final class MinecartChunkLoader {
 
 	/**
-	 * 续票间隔：每 5 秒（100 刻）扫一遍。
+	 * 全量扫描间隔的兜底范围，实际值来自规则 {@code minecartScanInterval}。
 	 */
-	private static final int REFRESH_INTERVAL_TICKS = 100;
+	private static final int MIN_SCAN_INTERVAL = 1;
+	private static final int MAX_SCAN_INTERVAL = 1200;
+
+	/**
+	 * 已认定矿车探测间隔的兜底范围，实际值来自规则 {@code minecartProbeInterval}。
+	 */
+	private static final int MIN_PROBE_INTERVAL = 1;
+	private static final int MAX_PROBE_INTERVAL = 100;
 
 	/**
 	 * 票据有效期：15 秒（300 刻），是续票间隔的 3 倍。
@@ -83,9 +90,10 @@ public final class MinecartChunkLoader {
 	private static final int ANCHOR_SAVE_INTERVAL = 100;
 
 	/**
-	 * 锚点校验周期：每 12 轮（60 秒）检查一次「区块已加载但矿车没了」的锚点。
+	 * 锚点校验周期：固定每 1200 刻检查一次「区块已加载但矿车没了」的锚点。
+	 * 不跟随扫描间隔，避免扫描调密后校验也跟着变频繁。
 	 */
-	private static final int ANCHOR_VALIDATE_CYCLES = 12;
+	private static final int ANCHOR_VALIDATE_TICKS = 1200;
 
 	/**
 	 * 锚点保活窗口：最近 2 分钟（真实时间）内确认过的矿车，即使这一轮判定不到铁轨，
@@ -114,10 +122,10 @@ public final class MinecartChunkLoader {
 	private static final int MAX_RANGE = 32;
 
 	/**
-	 * 诊断输出的节流：状态没变化时每 12 轮（60 秒）打一次心跳，
-	 * 避免开着 debugLog 时每 5 秒刷一行。状态变化（命中数变了）则立即输出。
+	 * 诊断心跳：状态没变化时每 60 秒（真实时间）打一行，
+	 * 避免开着 debugLog 时刷屏。状态变化（命中数变了）则立即输出。
 	 */
-	private static final int HEARTBEAT_CYCLES = 12;
+	private static final long HEARTBEAT_MS = 60_000L;
 
 	/**
 	 * 诊断信息里最多列几个样例（续票位置 / 未命中原因），防止一次几十辆车刷屏。
@@ -157,9 +165,9 @@ public final class MinecartChunkLoader {
 	private static int lastKeepAlive = -1;
 
 	/**
-	 * 统计轮次，用于心跳节流。
+	 * 上次心跳输出的时刻（毫秒），-1 表示还没输出过。
 	 */
-	private static int cycles = 0;
+	private static long lastHeartbeatMs = -1;
 
 	/**
 	 * 矿车 UUID -> 最近一次确认停在指定铁轨上的游戏刻，供 {@link #RAIL_GRACE_TICKS} 宽限判定。
@@ -194,6 +202,24 @@ public final class MinecartChunkLoader {
 	private static final Map<UUID, Long> LAST_MATCHED = new HashMap<>();
 
 	/**
+	 * 上一轮全量扫描以来，逐刻探测命中过的矿车（仅用于诊断输出）。
+	 */
+	private static final Set<UUID> PROBE_HITS = new HashSet<>();
+
+	/**
+	 * 上一次诊断输出的逐刻探测命中数，用来只在变化时打一行。
+	 */
+	private static int lastProbeHits = -1;
+
+	/**
+	 * 规则字符串 -> 解析结果缓存。tick 每刻都会跑，不能每次都重新分配 Set。
+	 */
+	private static String cachedTypesRaw;
+	private static String cachedRailsRaw;
+	private static Set<String> cachedTypes = Set.of();
+	private static Set<String> cachedRails = Set.of();
+
+	/**
 	 * 锚点记录：维度用 id 字符串保存，避免跨版本（1.21.10 的 ResourceLocation / 1.21.11 的 Identifier）差异。
 	 */
 	private record Anchor(String dimensionId, ChunkPos pos) {
@@ -202,27 +228,71 @@ public final class MinecartChunkLoader {
 	private MinecartChunkLoader() {
 	}
 
-	public static void tick(MinecraftServer server) {
-		// 每 5 秒（100 刻）扫描并续票
-		if (server.getTickCount() % REFRESH_INTERVAL_TICKS != 0) {
-			return;
+	/**
+	 * 带缓存的 {@code minecartLoaderTypes} 解析结果：规则值不变时直接复用。
+	 */
+	private static Set<String> types() {
+		String raw = CcuRules.minecartLoaderTypes;
+		if (!raw.equals(cachedTypesRaw)) {
+			cachedTypesRaw = raw;
+			cachedTypes = parseIds(raw);
 		}
+		return cachedTypes;
+	}
+
+	/**
+	 * 带缓存的 {@code minecartLoaderRails} 解析结果。
+	 */
+	private static Set<String> rails() {
+		String raw = CcuRules.minecartLoaderRails;
+		if (!raw.equals(cachedRailsRaw)) {
+			cachedRailsRaw = raw;
+			cachedRails = parseIds(raw);
+		}
+		return cachedRails;
+	}
+
+	/**
+	 * @return 全量扫描间隔（刻），由规则 {@code minecartScanInterval} 提供并做范围兜底
+	 */
+	private static int scanInterval() {
+		return Math.max(MIN_SCAN_INTERVAL, Math.min(MAX_SCAN_INTERVAL, CcuRules.minecartScanInterval));
+	}
+
+	/**
+	 * @return 已认定矿车的探测间隔（刻），由规则 {@code minecartProbeInterval} 提供并做范围兜底
+	 */
+	private static int probeInterval() {
+		return Math.max(MIN_PROBE_INTERVAL, Math.min(MAX_PROBE_INTERVAL, CcuRules.minecartProbeInterval));
+	}
+
+	public static void tick(MinecraftServer server) {
 		if (!CcuRules.minecartChunkLoader) {
 			return;
 		}
 
-		Set<String> types = parseIds(CcuRules.minecartLoaderTypes);
-		Set<String> rails = parseIds(CcuRules.minecartLoaderRails);
+		Set<String> types = types();
+		Set<String> rails = rails();
+		int range = Math.max(MIN_RANGE, Math.min(MAX_RANGE, CcuRules.minecartLoaderRange));
+		int ticketRadius = range + 2;
+		int now = server.getTickCount();
+		long nowMs = System.currentTimeMillis();
+
+		// 已认定矿车的轻量探测（按 UUID 直查，不做全量遍历）。默认每刻一次：
+		// 矿车可能整个推进周期里只有 2 刻在铁轨上，采样间隔稍大就会整段错过。
+		if (!types.isEmpty() && !rails.isEmpty() && now % probeInterval() == 0) {
+			probeAnchors(server, rails, ticketRadius, now, nowMs);
+		}
+
+		// 全量扫描：发现新矿车并出诊断（间隔由 minecartScanInterval 控制，默认 100 刻）
+		if (now % scanInterval() != 0) {
+			return;
+		}
 		if (types.isEmpty() || rails.isEmpty()) {
 			CcuServer.debug("矿车加载器：配置解析后为空，本轮跳过（minecartLoaderTypes=%s，minecartLoaderRails=%s）",
 					types, rails);
 			return;
 		}
-
-		int range = Math.max(MIN_RANGE, Math.min(MAX_RANGE, CcuRules.minecartLoaderRange));
-		int ticketRadius = range + 2;
-		int now = server.getTickCount();
-		long nowMs = System.currentTimeMillis();
 
 		// 先把上次记下来的锚点区块加载起来（重启/卸载后自举），再走正常扫描
 		updateAnchors(server, now, nowMs, ticketRadius);
@@ -289,6 +359,13 @@ public final class MinecartChunkLoader {
 			}
 		}
 
+		int probeHits = PROBE_HITS.size();
+		PROBE_HITS.clear();
+		if (probeHits > 0 && probeHits != lastProbeHits) {
+			CcuServer.debug("矿车加载器：轻量探测维持 %d 辆（不依赖全量扫描）", probeHits);
+		}
+		lastProbeHits = probeHits;
+
 		// 清理长期没再出现过的矿车（宽限早已失效，留着没用），避免映射随矿车数量无限增长
 		LAST_ON_RAIL.entrySet().removeIf(entry -> now - entry.getValue() > RAIL_GRACE_TICKS * 2);
 
@@ -296,7 +373,7 @@ public final class MinecartChunkLoader {
 		expireAnchors(nowMs);
 		saveAnchorsIfDue(now);
 
-		if (!shouldLog(typeHits, matched, graceHits, pistonHits)) {
+		if (!shouldLog(typeHits, matched, graceHits, pistonHits, nowMs)) {
 			return;
 		}
 
@@ -332,23 +409,31 @@ public final class MinecartChunkLoader {
 	/**
 	 * 诊断输出节流：命中数变化立刻输出，否则每 {@link #HEARTBEAT_CYCLES} 轮输出一次。
 	 */
-	private static boolean shouldLog(int typeHits, int matched, int graceHits, int pistonHits) {
+	private static boolean shouldLog(int typeHits, int matched, int graceHits, int pistonHits, long nowMs) {
 		if (!CcuRules.debugLog) {
 			// 关着的时候不维护状态：这样重新打开 debugLog 后第一轮就会立刻输出一次
 			lastMatched = -1;
 			lastTypeHits = -1;
 			lastGraceHits = -1;
 			lastPistonHits = -1;
+			lastHeartbeatMs = -1;
 			return false;
 		}
-		cycles++;
 		boolean changed = matched != lastMatched || typeHits != lastTypeHits
 				|| graceHits != lastGraceHits || pistonHits != lastPistonHits;
 		lastMatched = matched;
 		lastTypeHits = typeHits;
 		lastGraceHits = graceHits;
 		lastPistonHits = pistonHits;
-		return changed || cycles % HEARTBEAT_CYCLES == 0;
+		if (changed) {
+			lastHeartbeatMs = nowMs;
+			return true;
+		}
+		if (lastHeartbeatMs < 0 || nowMs - lastHeartbeatMs >= HEARTBEAT_MS) {
+			lastHeartbeatMs = nowMs;
+			return true;
+		}
+		return false;
 	}
 
 	private static String joinSamples(List<String> samples) {
@@ -459,6 +544,44 @@ public final class MinecartChunkLoader {
 	}
 
 	/**
+	 * 每刻轻量探测「已认定」的矿车：按 UUID 直接取实体，检查是否在指定铁轨上或被活塞带动。
+	 *
+	 * <p>成本只与锚点数量有关，与世界上的实体总数无关；因此可以每刻跑，稳定捕捉到
+	 * 只有 2 刻宽的判定窗口，不会像 100 刻全量扫描那样被采样相位卡死。
+	 * 新车仍然由全量扫描负责发现。</p>
+	 */
+	private static void probeAnchors(MinecraftServer server, Set<String> rails, int ticketRadius,
+	                                 int now, long nowMs) {
+		if (ANCHORS.isEmpty()) {
+			return;
+		}
+		Map<String, ServerLevel> levels = new HashMap<>();
+		for (ServerLevel level : server.getAllLevels()) {
+			levels.put(DimensionIds.of(level.dimension()), level);
+		}
+		for (Map.Entry<UUID, Anchor> entry : ANCHORS.entrySet()) {
+			ServerLevel level = levels.get(entry.getValue().dimensionId());
+			if (level == null) {
+				continue;
+			}
+			Entity cart = level.getEntity(entry.getKey());
+			if (cart == null || cart.isRemoved()) {
+				continue;
+			}
+			boolean onRail = isOnRail(level, cart, rails);
+			if (!onRail && !isOnMovingPiston(level, cart)) {
+				continue;
+			}
+			if (onRail) {
+				LAST_ON_RAIL.put(entry.getKey(), now);
+			}
+			level.getChunkSource().addTicketWithRadius(MINECART_TICKET, cart.chunkPosition(), ticketRadius);
+			recordAnchor(level, cart, nowMs);
+			PROBE_HITS.add(entry.getKey());
+		}
+	}
+
+	/**
 	 * 自举：把锚点记录的区块加载出来，让矿车实体重新进入世界。
 	 *
 	 * <p>区块真正加载出来后就能判断矿车还在不在：在就交给正常扫描接管，不在就丢掉这条锚点。
@@ -534,7 +657,7 @@ public final class MinecartChunkLoader {
 		lastKeepAlive = keepAlive;
 
 		// 定期校验：区块已加载却找不到对应矿车的锚点，清掉，避免配置文件无限增长
-		if (now % (REFRESH_INTERVAL_TICKS * ANCHOR_VALIDATE_CYCLES) == 0) {
+		if (now % ANCHOR_VALIDATE_TICKS == 0) {
 			boolean removedAny = false;
 			Iterator<Map.Entry<UUID, Anchor>> iterator = ANCHORS.entrySet().iterator();
 			while (iterator.hasNext()) {
@@ -605,9 +728,11 @@ public final class MinecartChunkLoader {
 		UUID id = cart.getUUID();
 		BOOTSTRAPPING.remove(id);
 		LAST_MATCHED.put(id, nowMs);
-		Anchor anchor = new Anchor(DimensionIds.of(level.dimension()), cart.chunkPosition());
-		Anchor previous = ANCHORS.put(id, anchor);
-		if (!anchor.equals(previous)) {
+		ChunkPos pos = cart.chunkPosition();
+		String dimensionId = DimensionIds.of(level.dimension());
+		Anchor current = ANCHORS.get(id);
+		if (current == null || !current.pos().equals(pos) || !current.dimensionId().equals(dimensionId)) {
+			ANCHORS.put(id, new Anchor(dimensionId, pos));
 			anchorsDirty = true;
 		}
 	}

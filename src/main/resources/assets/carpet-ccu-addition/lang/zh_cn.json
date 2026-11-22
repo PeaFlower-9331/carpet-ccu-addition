@@ -32,6 +32,13 @@
 	"carpet.rule.minecartLoaderRange.name": "minecartLoaderRange",
 	"carpet.rule.minecartLoaderRange.desc": "矿车周围保持加载的区块半径，取值 1-32，默认 2。",
 	"carpet.rule.minecartLoaderRange.extra.0": "覆盖区块数按半径平方增长，设太大很吃性能。",
+	"carpet.rule.minecartProbeInterval.name": "minecartProbeInterval",
+	"carpet.rule.minecartProbeInterval.desc": "已认定矿车的探测间隔（刻），默认每刻一次。这些车按 UUID 直接查，不看世界上有多少实体；矿车每个推进周期里可能只有 2 刻在铁轨上，间隔稍大就会整段错过。",
+	"carpet.rule.minecartProbeInterval.extra.0": "调大只是省 CPU，代价是可能漏判；设到 5 以上基本就靠运气了。",
+	"carpet.rule.minecartProbeInterval.extra.1": "只影响已认定的矿车，发现新车由 minecartScanInterval 控制。",
+	"carpet.rule.minecartScanInterval.name": "minecartScanInterval",
+	"carpet.rule.minecartScanInterval.desc": "全量扫描间隔（刻），只负责发现还没被认定过的矿车，默认 100 刻。",
+	"carpet.rule.minecartScanInterval.extra.0": "已认定的矿车由 minecartProbeInterval 按 UUID 探测，不受这条影响；大服可以调大来降低扫描开销。",
 	"carpet.rule.noAmethystBudInWater.name": "noAmethystBudInWater",
 	"carpet.rule.noAmethystBudInWater.desc": "紫水晶母岩不会在相邻方格是水的面上生长紫水晶芽。",
 	"carpet.rule.noAmethystBudInWater.extra.0": "只影响生成新芽；已经长出来的芽与簇不受影响。"

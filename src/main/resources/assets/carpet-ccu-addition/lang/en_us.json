@@ -32,6 +32,13 @@
 	"carpet.rule.minecartLoaderRange.name": "minecartLoaderRange",
 	"carpet.rule.minecartLoaderRange.desc": "Chunk radius kept loaded around the cart, 1-32, default 2.",
 	"carpet.rule.minecartLoaderRange.extra.0": "Cost grows with the square of the radius - keep it small.",
+	"carpet.rule.minecartProbeInterval.name": "minecartProbeInterval",
+	"carpet.rule.minecartProbeInterval.desc": "Probe interval (ticks) for already-registered loader carts, default: every tick. They are looked up directly by UUID, so this does not scan the world; a cart may only be on a rail for 2 ticks per machine cycle, which a coarser interval would miss entirely.",
+	"carpet.rule.minecartProbeInterval.extra.0": "Raising it only saves CPU, at the cost of missed detections; values above 5 are mostly luck.",
+	"carpet.rule.minecartProbeInterval.extra.1": "Only affects registered carts; new carts are discovered by minecartScanInterval.",
+	"carpet.rule.minecartScanInterval.name": "minecartScanInterval",
+	"carpet.rule.minecartScanInterval.desc": "Full scan interval (ticks) used to discover carts that are not registered yet. Default 100.",
+	"carpet.rule.minecartScanInterval.extra.0": "Registered carts are probed by UUID via minecartProbeInterval and are not affected by this rule.",
 	"carpet.rule.noAmethystBudInWater.name": "noAmethystBudInWater",
 	"carpet.rule.noAmethystBudInWater.desc": "Budding amethyst never grows amethyst buds on a face whose neighbouring block is water.",
 	"carpet.rule.noAmethystBudInWater.extra.0": "Only affects newly grown buds; existing buds and clusters are untouched."
