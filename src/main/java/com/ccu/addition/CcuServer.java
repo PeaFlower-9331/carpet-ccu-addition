@@ -141,10 +141,14 @@ public class CcuServer implements CarpetExtension {
 
 	/**
 	 * 仅在规则 debugLog 打开时输出的日志。
+	 *
+	 * <p>占位符用 {@link String#formatted} 的 printf 风格（{@code %s}、{@code %d}），
+	 * 与调用处保持一致。注意不能直接把 format + args 交给 slf4j：slf4j 认的是
+	 * {@code {}}，printf 占位符会被当成字面量原样打印出来。</p>
 	 */
 	public static void debug(String format, Object... args) {
 		if (CcuRules.debugLog) {
-			LOGGER.info(format, args);
+			LOGGER.info(args.length == 0 ? format : format.formatted(args));
 		}
 	}
 

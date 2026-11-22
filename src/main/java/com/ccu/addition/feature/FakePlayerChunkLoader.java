@@ -148,6 +148,10 @@ public final class FakePlayerChunkLoader {
 
 	/**
 	 * 周期性对账：按配置给假人挂/撤 ticket。
+	 *
+	 * <p>每个周期都无条件重挂一次票，而不是「位置没变就跳过」，原因见
+	 * {@link #addTicket}：原版对同类型同等级的 ticket 只保留一条，多个假人共用，
+	 * 别人撤票时会连带撤掉本假人的覆盖。</p>
 	 */
 	public static void tick(MinecraftServer server) {
 		if (server.getTickCount() % CHECK_INTERVAL != 0) {
@@ -173,16 +177,22 @@ public final class FakePlayerChunkLoader {
 
 			ResourceKey<Level> dimension = player.level().dimension();
 			ChunkPos pos = player.chunkPosition();
-			if (current != null && current.radius() == wanted
-					&& current.pos().equals(pos) && current.dimension().equals(dimension)) {
-				continue;
+			// 位置、半径或维度变了才撤旧票；撤完置空，下面会重新记录
+			if (current != null && (current.radius() != wanted
+					|| !current.pos().equals(pos)
+					|| !current.dimension().equals(dimension))) {
+				removeTicket(server, current);
+				current = null;
 			}
 
-			if (current != null) {
-				removeTicket(server, current);
-			}
+			// 无条件重挂：原版 TicketStorage 对「同类型 + 同等级」的 ticket
+			// 只 resetTicksLeft 去重，不会累加引用，因此两个假人半径重叠时
+			// 共享的是同一条 ticket —— 其中一个离开时会把另一个的票一起删掉。
+			// 每 20 刻补挂一次，被误删的覆盖最多 1 秒后自动恢复。
 			addTicket(player, pos, wanted);
-			APPLIED.put(id, new Applied(dimension, pos, wanted));
+			if (current == null) {
+				APPLIED.put(id, new Applied(dimension, pos, wanted));
+			}
 		}
 
 		// 清理已经下线/被移除的假人
@@ -209,6 +219,10 @@ public final class FakePlayerChunkLoader {
 	private static void addTicket(ServerPlayer player, ChunkPos pos, int radius) {
 		if (player.level() instanceof ServerLevel level) {
 			// +2：把「半径 R 内实体刻」换算成 addTicketWithRadius 需要的 ticket 半径
+			//
+			// 注意：原版 TicketStorage#addTicket 对「同类型 + 同等级」的 ticket 只做
+			// resetTicksLeft 去重，不会累加引用计数，所以这里对同一块区块重复挂票是
+			// 幂等的；反过来，removeTicket 会把整条 ticket 删掉，不区分是谁挂的。
 			level.getChunkSource().addTicketWithRadius(CCU_FAKE_PLAYER_TICKET, pos, radius + 2);
 		}
 	}
