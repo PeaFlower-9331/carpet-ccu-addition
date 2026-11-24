@@ -17,7 +17,8 @@
 | Carpet Mod | 必需 | https://github.com/gnembon/fabric-carpet |
 | Fabric Loader | 必需 | https://fabricmc.net/ |
 | Carpet Org Addition | 可选（`batch action` 需要） | https://github.com/fcsailboat/Carpet-Org-Addition |
-| Carpet TIS Addition | 可选（`rejoin` 与保留载具需要） | https://github.com/Fallen-Breath/fabric-carpet-tis-addition |
+| Carpet TIS Addition | 可选（`rejoin` 命令与保留载具需要） | https://github.com/Fallen-Breath/fabric-carpet-tis-addition |
+| GugleCarpetAddition | 可选（假人驻留 `fakePlayerResident` 配合保留载具） | https://github.com/Gu-ZT/gugle-carpet-addition |
 
 ## 支持版本
 
@@ -39,8 +40,7 @@
 | 规则 | 类型 | 默认值 | 分类 | 说明 |
 | --- | --- | --- | --- | --- |
 | `fakePlayerSpawnPreload` | boolean | `true` | CCU / 假人 | `/player <名字> spawn` 时先异步预加载档案再召唤，避免召唤卡顿 |
-| `fakePlayerRejoinKeepRiding` | boolean | `true` | CCU / 假人 | `/player <名字> rejoin` 时保留原来乘坐的载具 |
-| `commandPlayerRejoin` | string | `"ops"` | CCU / 假人 / command | `rejoin` 的可用级别，取值同 `commandPlayer` |
+| `fakePlayerRejoinKeepRiding` | boolean | `true` | CCU / 假人 | 假人重新上线（TIS `rejoin` / GCA 假人驻留）后回到原来乘坐的载具 |
 | `commandBatchPlayerAction` | string | `"ops"` | CCU / 假人 / command | 批量假人动作命令的可用级别，取值同 `commandPlayer` |
 | `commandPlayerLoadRange` | string | `"ops"` | CCU / 假人 / command | 加载范围命令的可用级别，取值同 `commandPlayer` |
 | `minecartChunkLoader` | boolean | `false` | CCU / 矿车 | 矿车加载器总开关 |
@@ -71,9 +71,10 @@
 
 动作列表由 `/player` 命令树实时生成，`/playerManager batch action`（不带参数）即可查看。
 
-### 假人 rejoin（需要 Carpet TIS Addition）
+### 假人上线后保留载具
 
-`rejoin` 命令由 Carpet TIS Addition 提供，本模组只补规则：让假人在 rejoin 时**保留原来乘坐的载具**。
+`rejoin` 命令由 Carpet TIS Addition 提供，假人驻留由 GugleCarpetAddition 的 `fakePlayerResident` 提供；
+本模组只补规则：假人在这些情况下重新上线时**回到原来乘坐的载具**。
 
 ```
 /player bot1 rejoin
@@ -85,8 +86,13 @@
 | --- | --- | --- |
 | `/player bot1 spawn` | 命令执行点（Carpet 原版） | 下车 |
 | `/player bot1 rejoin` | 存档位置（TIS 提供） | 保留（本模组 `fakePlayerRejoinKeepRiding`） |
+| 服务器重启（GCA `fakePlayerResident`） | 存档位置 | 保留（本模组 `fakePlayerRejoinKeepRiding`） |
 
-没装 TIS Addition 时规则不生效，也不会报错。
+实现方式：从 playerdata 的 `RootVehicle` 读出载具 UUID，等它的区块加载出来后让假人重新上座；
+只上座、不生成载具（不会出现重复矿车），载具必须在 8 格内且最多等 15 秒，
+所以 `/player <名字> spawn` 到别处时不会把人拽回老位置。
+
+两个前置 mod 都没装时规则不生效，也不会报错。
 
 ### 假人加载范围
 

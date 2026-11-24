@@ -6,7 +6,7 @@
 | --- | --- | --- | --- | --- |
 | `debugLog` | boolean | `false` | CCU / creative / feature | 输出本模组的详细生命周期日志，仅影响日志详细程度 |
 | `fakePlayerSpawnPreload` | boolean | `true` | CCU / CCU_fake_player / survival / feature | 召唤假人时先异步预加载档案再召唤，避免卡顿 |
-| `fakePlayerRejoinKeepRiding` | boolean | `true` | CCU / CCU_fake_player / survival / feature | 配合 TIS 的 `/player <名字> rejoin`，保留原来乘坐的载具 |
+| `fakePlayerRejoinKeepRiding` | boolean | `true` | CCU / CCU_fake_player / survival / feature | 假人重新上线（TIS rejoin / GCA 假人驻留）后回到原来乘坐的载具 |
 | `commandBatchPlayerAction` | string | `"ops"` | CCU / CCU_fake_player / command | `batch action` 的可用级别，取值同 `commandPlayer` |
 | `commandPlayerLoadRange` | string | `"ops"` | CCU / CCU_fake_player / command | `/player <名字> load` 的可用级别，取值同 `commandPlayer` |
 
@@ -236,48 +236,72 @@ Carpet 的 `/player <名字> spawn` 在真正创建假人前要先解析玩家�
 - 只影响**召唤时机**，不改变假人的 UUID、皮肤、权限等任何数据。
 - 预加载在后台线程执行，不会阻塞服务器刻。
 - 想确认效果可以打开 `debugLog`，日志里会记录预加载失败的个例（不影响召唤）。
-## 假人 rejoin
+## 假人上线后保留载具
 
-分类：`CCU` / 假人。规则：`fakePlayerRejoinKeepRiding`（boolean，默认 `true`）。
+分类：`CCU` / `假人`。规则：`fakePlayerRejoinKeepRiding`（boolean，默认 `true`）。
 
-### 命令来自 Carpet TIS Addition
+### 解决什么问题
 
-`rejoin` 这个子命令不是本模组提供的，而是 **Carpet TIS Addition** 的 `fakePlayerRejoin`：
+假人重新上线时会从载具上掉下来，三条路径原来都不保留骑乘：
 
-```
-/player <名字> rejoin     # TIS 提供
-```
-
-它的含义是「以**存档位置**重新召唤假人」，而不是像 `spawn` 那样放到命令执行点：
-
-| 命令 | 位置 | 骑乘 |
+| 上线方式 | 命令 / 来源 | 原来的骑乘 |
 | --- | --- | --- |
-| `/player bot1 spawn` | 命令执行点（Carpet 原版） | 下车 |
-| `/player bot1 rejoin` | 存档位置（TIS） | 保留（本模组规则） |
+| `spawn` | `/player bot1 spawn`（Carpet 原版） | 下车（本规则也不管） |
+| `rejoin` | `/player bot1 rejoin`（TIS） | 下车 |
+| 假人驻留 | GCA 的 `fakePlayerResident`，重启后自动拉起来 | 下车 |
 
-### 本模组补什么
+`rejoin` 是 **Carpet TIS Addition** 的 `fakePlayerRejoin`：以「存档位置」重新召唤假人，而不是像
+`spawn` 那样放到命令执行点。`fakePlayerResident` 是 **GugleCarpetAddition**（GCA）的规则：
+关服时把假人存进 `world/serverconfig/guglecarpetaddition/residents.json`，开服 `loadLevel`
+结束时再拉起来。这两个功能都不是本模组提供的，本模组只补「骑回去」这一块。
 
-只补「不下车」这一块：Carpet 在 1.4.188 起，读完存档会主动 `stopRiding()` 把假人踢下載具；
-本规则在 rejoin 语境下跳过这一次下坐骑，让假人继续坐在原来的载具上。
+### 为什么原来骑不回去
 
-判定方式：`FabricLoader.isModLoaded("carpettisaddition")` + 反射读取 TIS 的
-`FakePlayerRejoinHelper.isRejoin`，所以：
+原版 1.21.9 起，玩家退出时骑着的载具会写进 playerdata 的 `RootVehicle`（载具 UUID + 完整实体数据），
+由登录流程里的 `PrepareSpawnTask` 调用 `loadAndSpawnParentVehicle` 恢复。
+**假人绕过整个登录流程**，所以这段恢复永远不会执行 —— `RootVehicle` 只是躺在存档里，
+这就是重启 / rejoin 之后假人站在地上的原因。Carpet 自己也只是在召唤末尾补一次 `stopRiding()`。
 
-- 装了 TIS：规则生效，跟随 TIS 的 rejoin；
-- 没装 TIS：规则不生效，也不会因为缺类报错。
+### 本模组怎么做
 
-### 实现细节
+1. 假人登录时读它自己的 `world/playerdata/<uuid>.dat`，取出 `RootVehicle.Attach` 里的载具 UUID；
+2. 每刻查一次载具实体（它所在区块可能还没加载出来），查到且满足保护条件就让假人重新上座；
+3. 只**重新上座**，不生成任何新实体 —— 载具本来就在存档里，所以不会出现重复的矿车。
 
-1. Carpet 的 spawn 主体跑在 `whenCompleteAsync(..., server)` 回调里，而 TIS 的命令执行完就会清掉标记，
-   所以本模组在自己的 `whenCompleteAsync` 包装里把「这次是 rejoin」带进回调；
-2. 召唤 lambda 里按标记跳过 `stopRiding()`，其余（背包/经验/配方等）仍由 Carpet 的 `loadPlayerData` 正常读取，
-   不会重现 [Issue #2110](https://github.com/gnembon/fabric-carpet/issues/2110)；
-3. `loadAndSpawnParentVehicle` 里优先复用世界里已存在的同 UUID 载具，避免重复载具。
+判定方式：`onPlayerLoggedIn` 里判断 `player instanceof EntityPlayerMPFake`，与装没装 TIS / GCA 无关：
+
+- 装了 GCA 的假人驻留：重启后假人被拉起，本规则把它骑回去；
+- 装了 TIS：`rejoin` 之后同样走这条路径；
+- 两个都没装：没有任何假人自动上线，规则自然不触发，也不会报错。
+
+### 两个保护
+
+| 保护 | 作用 |
+| --- | --- |
+| 距离 8 格以内 | 只有假人上线位置就在载具旁边才上座；`/player <名字> spawn` 到别处时不会把人拽回老位置 |
+| 最多等 15 秒 | 载具区块一直没加载出来就放弃，不会无限重试（按真实时间算，不受 tick 速度影响） |
+
+### 验证
+
+打开 `debugLog` 后，正常恢复会看到（第三行是假人加载范围也一并生效）：
+
+```
+假人 Bot1 的存档里记着载具 <uuid>，等它所在区块加载后恢复骑乘
+假人 Bot1 已恢复乘坐载具 entity.minecraft.minecart @ BlockPos{x=1, y=-60, z=1}
+假人 Bot1：已挂额外加载票，半径 10 区块 @ [0, 0]
+```
+
+放弃恢复时会打印原因：
+
+```
+假人 Bot1 等待载具 <uuid> 超过 15 秒，放弃恢复骑乘
+假人 Bot1 距离载具 <uuid> 太远（超过 8 格），不恢复骑乘
+```
 
 ### 关于载具偏移
 
-代码里没有任何一行移动载具或假人的坐标：不传送载具、不重算座位、不改位置。
-`/player <名字> spawn` 的行为与 Carpet 原版完全一致。
+代码里没有任何一行移动载具的坐标：不传送载具、不重算座位、不生成实体。
+`/player <名字> spawn` 的行为与 Carpet 原版完全一致（距离保护会跳过它）。
 
 ## 加规则的三步
 
@@ -287,7 +311,7 @@ Carpet 的 `/player <名字> spawn` 在真正创建假人前要先解析玩家�
 ## 紫水晶芽
 
 分类：CCU。规则：
-oAmethystBudInWater（boolean，默认 alse）。
+noAmethystBudInWater（boolean，默认 false）。
 
 开启后，紫水晶母岩**不会在相邻方格是水的面上生长紫水晶芽**。
 

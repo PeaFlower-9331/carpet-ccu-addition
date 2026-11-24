@@ -18,6 +18,7 @@ It does not change any vanilla behaviour by default; every feature is behind a r
 | Fabric Loader | Required | https://fabricmc.net/ |
 | Carpet Org Addition | Optional (`batch action` needs it) | https://github.com/fcsailboat/Carpet-Org-Addition |
 | Carpet TIS Addition | Optional (`rejoin` and keeping the vehicle need it) | https://github.com/Fallen-Breath/fabric-carpet-tis-addition |
+| GugleCarpetAddition | Optional (fake player resident `fakePlayerResident`, works with vehicle restore) | https://github.com/Gu-ZT/gugle-carpet-addition |
 
 ## Supported versions
 
@@ -39,8 +40,7 @@ All rules live in Carpet's main settings manager: `/carpet <rule> <value>`. Cate
 | Rule | Type | Default | Category | Description |
 | --- | --- | --- | --- | --- |
 | `fakePlayerSpawnPreload` | boolean | `true` | CCU / fake_player | `/player <name> spawn` preloads the profile asynchronously before spawning, avoiding a stall |
-| `fakePlayerRejoinKeepRiding` | boolean | `true` | CCU / fake_player | `/player <name> rejoin` keeps the vehicle the bot was riding |
-| `commandPlayerRejoin` | string | `"ops"` | CCU / fake_player / command | Permission level of `rejoin`, same values as `commandPlayer` |
+| `fakePlayerRejoinKeepRiding` | boolean | `true` | CCU / fake_player | Restores the vehicle a bot was riding when it comes back online (TIS `rejoin` / GCA fake player resident) |
 | `commandBatchPlayerAction` | string | `"ops"` | CCU / fake_player / command | Permission level of the batch action command, same values as `commandPlayer` |
 | `commandPlayerLoadRange` | string | `"ops"` | CCU / fake_player / command | Permission level of the load range command, same values as `commandPlayer` |
 | `minecartChunkLoader` | boolean | `false` | CCU / minecart | Master switch of the minecart chunk loader |
@@ -71,9 +71,10 @@ Requires Carpet Org Addition. Runs any `/player` action on a group of bots:
 
 The action list is derived from the `/player` command tree at runtime; run `/playerManager batch action` without arguments to print it.
 
-### Fake player rejoin (requires Carpet TIS Addition)
+### Keeping the vehicle after a fake player comes back online
 
-The `rejoin` command comes from Carpet TIS Addition; this mod only adds the rule that keeps the bot riding its vehicle:
+The `rejoin` command comes from Carpet TIS Addition, and automatic post-restart bots come from
+GugleCarpetAddition's `fakePlayerResident`. This mod only adds the rule that restores the vehicle:
 
 ```
 /player bot1 rejoin
@@ -83,8 +84,12 @@ The `rejoin` command comes from Carpet TIS Addition; this mod only adds the rule
 | --- | --- | --- |
 | `/player bot1 spawn` | command position (vanilla Carpet) | dismounted |
 | `/player bot1 rejoin` | saved position (from TIS) | kept (`fakePlayerRejoinKeepRiding`) |
+| server restart (GCA `fakePlayerResident`) | saved position | kept (`fakePlayerRejoinKeepRiding`) |
 
-Without TIS Addition the rule does nothing and never errors.
+How it works: the vehicle UUID is read from `RootVehicle` in playerdata, then the bot is put back on it once
+that chunk is loaded. It only re-mounts and never spawns a vehicle (no duplicate carts); the vehicle must be
+within 8 blocks and the mod waits at most 15 seconds, so `/player <name> spawn` elsewhere never drags the bot
+back to an old vehicle. Without either mod the rule does nothing and never errors.
 
 ### Fake player load range
 

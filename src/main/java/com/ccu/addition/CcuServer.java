@@ -7,6 +7,7 @@ import carpet.utils.Translations;
 import com.ccu.addition.command.BatchPlayerActionCommand;
 import com.ccu.addition.command.LoadRangeCommand;
 import com.ccu.addition.feature.FakePlayerChunkLoader;
+import com.ccu.addition.feature.FakePlayerRideRestore;
 import com.ccu.addition.feature.MinecartChunkLoader;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -96,6 +97,8 @@ public class CcuServer implements CarpetExtension {
 		}
 		// 假人加载范围：按配置给假人维持区块 ticket（内部每 20 刻对账一次）
 		FakePlayerChunkLoader.tick(server);
+		// 假人重新上线后回到原来的载具（GCA 假人驻留 / TIS rejoin）
+		FakePlayerRideRestore.tick(server);
 		// 矿车加载器：每 5 秒给符合条件的矿车续一次加载票
 		MinecartChunkLoader.tick(server);
 	}
@@ -103,6 +106,8 @@ public class CcuServer implements CarpetExtension {
 	@Override
 	public void onPlayerLoggedIn(ServerPlayer player) {
 		debug("玩家登录：%s", player.getScoreboardName());
+		// 假人重新上线（GCA 假人驻留 / TIS rejoin）后回到原来的载具
+		FakePlayerRideRestore.onLogin(player);
 	}
 
 	@Override
@@ -112,6 +117,7 @@ public class CcuServer implements CarpetExtension {
 		if (player.level() instanceof net.minecraft.server.level.ServerLevel level) {
 			FakePlayerChunkLoader.forget(level.getServer(), player.getUUID());
 		}
+		FakePlayerRideRestore.forget(player.getUUID());
 	}
 
 	@Override

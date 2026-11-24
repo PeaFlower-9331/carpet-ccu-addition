@@ -166,6 +166,8 @@ public final class FakePlayerChunkLoader {
 			int wanted = getRange(player.getScoreboardName());
 			UUID id = player.getUUID();
 			Applied current = APPLIED.get(id);
+			// 首次给它挂票（包括服务器重启后 GCA 假人驻留把假人拉起来的情况）
+			boolean fresh = current == null;
 
 			if (wanted <= 0) {
 				if (current != null) {
@@ -192,6 +194,10 @@ public final class FakePlayerChunkLoader {
 			addTicket(player, pos, wanted);
 			if (current == null) {
 				APPLIED.put(id, new Applied(dimension, pos, wanted));
+				if (fresh) {
+					CcuServer.debug("假人 %s：已挂额外加载票，半径 %d 区块 @ %s",
+							player.getScoreboardName(), wanted, pos);
+				}
 			}
 		}
 

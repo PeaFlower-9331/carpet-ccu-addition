@@ -56,10 +56,15 @@ public final class CcuRules {
 	public static boolean fakePlayerSpawnPreload = true;
 
 	/**
-	 * 配合 Carpet TIS Addition 的 {@code /player <名字> rejoin}：假人在存档位置重新上线时保持原来乘坐的载具。
+	 * 假人重新上线时回到原来乘坐的载具。
 	 *
-	 * <p>Carpet 在召唤时会先加载存档数据（载具会被重新生成并骑上），紧接着主动
-	 * {@code stopRiding()} 把假人踢下来；本规则取消这一次下坐骑。</p>
+	 * <p>覆盖两条路径：Carpet TIS Addition 的 {@code /player <名字> rejoin}，以及
+	 * GugleCarpetAddition 的 {@code fakePlayerResident}（关服时记住假人、开服自动拉起来）。
+	 * 两者都不会恢复载具——原版只在真正的登录流程（{@code PrepareSpawnTask}）里读 playerdata 的
+	 * {@code RootVehicle} 并调用 {@code loadAndSpawnParentVehicle}，假人绕过了这一步。</p>
+	 *
+	 * <p>实现见 {@code FakePlayerRideRestore}：登录时读 playerdata 里记录的载具 UUID，
+	 * 等载具区块加载出来后重新上座；只上座、不生成实体，并且要求载具离假人 8 格以内。</p>
 	 */
 	@Rule(categories = {CCU, CCU_FAKE_PLAYER, RuleCategory.SURVIVAL, RuleCategory.FEATURE})
 	public static boolean fakePlayerRejoinKeepRiding = true;
