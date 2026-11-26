@@ -3,9 +3,11 @@ package com.ccu.addition.mixin;
 import carpet.patches.EntityPlayerMPFake;
 import com.ccu.addition.CcuRules;
 import com.ccu.addition.feature.FakePlayerSpawnPreloader;
+import com.ccu.addition.feature.PreloadStatus;
 import com.ccu.addition.feature.RejoinState;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -78,7 +80,11 @@ public abstract class EntityPlayerMPFakeMixin {
 		cir.setReturnValue(true);
 		// 重放跨越了任务边界，rejoin 标记要显式带过去
 		boolean rejoin = RejoinState.isRejoin();
+		// 谁执行的这条 /player spawn：拿来做屏幕上的预加载状态
+		ServerPlayer source = PreloadStatus.takeSource();
+		PreloadStatus.begin(source, username);
 		FakePlayerSpawnPreloader.preloadThen(server, username, () -> {
+			PreloadStatus.finish(source, username);
 			CCU_REENTER.set(Boolean.TRUE);
 			try {
 				RejoinState.runWith(rejoin,

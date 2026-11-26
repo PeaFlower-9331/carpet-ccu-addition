@@ -6,7 +6,7 @@
 	"carpet.rule.debugLog.desc": "输出本模组的详细日志，便于排查问题。",
 	"carpet.rule.debugLog.extra.0": "只影响日志详细程度，不改变任何游戏行为。",
 	"carpet.rule.fakePlayerSpawnPreload.name": "假人召唤预加载",
-	"carpet.rule.fakePlayerSpawnPreload.desc": "用 /player <名字> spawn 召唤假人时，先在后台解析玩家档案（UUID 与皮肤），解析完再真正召唤，避免召唤瞬间卡一下。",
+	"carpet.rule.fakePlayerSpawnPreload.desc": "用 /player <名字> spawn 召唤假人时，先在后台解析玩家档案（UUID 与皮肤），解析完再真正召唤，避免召唤瞬间卡一下。档案解析超过 0.3 秒时会在快捷栏上方显示进度。",
 	"carpet.rule.fakePlayerSpawnPreload.extra.0": "同一个名字只预加载一次；解析失败时照样召唤，只是退回离线档案。",
 	"carpet.rule.fakePlayerSpawnPreload.extra.1": "关闭后完全走 Carpet 原本的召唤流程。",
 	"carpet.rule.fakePlayerRejoinKeepRiding.name": "假人上线后保留载具",

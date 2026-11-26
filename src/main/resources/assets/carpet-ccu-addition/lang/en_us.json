@@ -6,7 +6,7 @@
 	"carpet.rule.debugLog.desc": "Print verbose logs of this mod for troubleshooting.",
 	"carpet.rule.debugLog.extra.0": "Only changes log verbosity; no gameplay effect.",
 	"carpet.rule.fakePlayerSpawnPreload.name": "Fake player spawn preload",
-	"carpet.rule.fakePlayerSpawnPreload.desc": "With /player <name> spawn, resolve the player profile (UUID and skin) in the background first and spawn afterwards, so the spawn does not stall the server.",
+	"carpet.rule.fakePlayerSpawnPreload.desc": "With /player <name> spawn, resolve the player profile (UUID and skin) in the background first and spawn afterwards, so the spawn does not stall the server. If resolution takes longer than 0.3s, progress is shown above the hotbar.",
 	"carpet.rule.fakePlayerSpawnPreload.extra.0": "Each name is preloaded once; if resolution fails the spawn still happens with the offline fallback.",
 	"carpet.rule.fakePlayerSpawnPreload.extra.1": "Disable to restore Carpet's original spawn flow.",
 	"carpet.rule.fakePlayerRejoinKeepRiding.name": "Keep the vehicle when a bot comes back",

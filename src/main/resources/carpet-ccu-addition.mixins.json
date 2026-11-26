@@ -5,7 +5,8 @@
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
 		"EntityPlayerMPFakeMixin",
-		"FakePlayerVehicleMixin"
+		"FakePlayerVehicleMixin",
+		"PlayerCommandSourceMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

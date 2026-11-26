@@ -39,7 +39,7 @@ All rules live in Carpet's main settings manager: `/carpet <rule> <value>`. Cate
 
 | Rule | Type | Default | Category | Description |
 | --- | --- | --- | --- | --- |
-| `fakePlayerSpawnPreload` | boolean | `true` | CCU / fake_player | `/player <name> spawn` preloads the profile asynchronously before spawning, avoiding a stall |
+| `fakePlayerSpawnPreload` | boolean | `true` | CCU / fake_player | `/player <name> spawn` preloads the profile asynchronously; slow lookups show progress above the hotbar |
 | `fakePlayerRejoinKeepRiding` | boolean | `true` | CCU / fake_player | Restores the vehicle a bot was riding when it comes back online (TIS `rejoin` / GCA fake player resident) |
 | `commandBatchPlayerAction` | string | `"ops"` | CCU / fake_player / command | Permission level of the batch action command, same values as `commandPlayer` |
 | `minecartChunkLoader` | boolean | `false` | CCU / minecart | Master switch of the minecart chunk loader |
