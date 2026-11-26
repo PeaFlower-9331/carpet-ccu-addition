@@ -27,9 +27,9 @@
 	"carpet.rule.minecartChunkLoader.extra.0": "Also needs minecartLoaderTypes, minecartLoaderRails and minecartLoaderRange.",
 	"carpet.rule.minecartChunkLoader.extra.1": "Tickets last 15 seconds, or 30 seconds for carts that did not move: after a cart leaves the rail or disappears, chunks unload within 30 seconds and nothing is left behind.",
 	"carpet.rule.minecartLoaderTypes.name": "Loader cart types",
-	"carpet.rule.minecartLoaderTypes.desc": "Comma separated minecart types that trigger loading, minecraft: prefix optional, e.g. minecart,chest_minecart,hopper_minecart.",
+	"carpet.rule.minecartLoaderTypes.desc": "Cart type that triggers loading (preset, single choice): minecart / chest_minecart / hopper_minecart / tnt_minecart / spawner_minecart / command_block_minecart / furnace_minecart. Default: minecart.",
 	"carpet.rule.minecartLoaderRails.name": "Loader rail types",
-	"carpet.rule.minecartLoaderRails.desc": "Comma separated rail types that trigger loading, e.g. rail,powered_rail,detector_rail,activator_rail.",
+	"carpet.rule.minecartLoaderRails.desc": "Rail type that triggers loading (preset, single choice): detector_rail / rail / powered_rail / activator_rail. Default: detector_rail.",
 	"carpet.rule.minecartLoaderRange.name": "Loader radius",
 	"carpet.rule.minecartLoaderRange.desc": "Chunk radius kept loaded around the cart, 1-32, default 2.",
 	"carpet.rule.minecartLoaderRange.extra.0": "The number of covered chunks grows with the square of the radius - keep it small.",
@@ -39,5 +39,7 @@
 	"carpet.rule.minecartScanInterval.extra.1": "When a cart stays in the same chunk on two consecutive grants, it switches to the 30-second ticket, giving parked machines twice the slack.",
 	"carpet.rule.noAmethystBudInWater.name": "No amethyst bud in water",
 	"carpet.rule.noAmethystBudInWater.desc": "Budding amethyst never grows a bud on a face whose neighbouring block is water.",
-	"carpet.rule.noAmethystBudInWater.extra.0": "Only affects newly grown buds; existing buds and clusters are untouched."
+	"carpet.rule.noAmethystBudInWater.extra.0": "Only affects newly grown buds; existing buds and clusters are untouched.",
+	"carpet.rule.minecartLoaderTypes.extra.0": "One rule matches one cart type; the old comma separated list is no longer accepted.",
+	"carpet.rule.minecartLoaderRails.extra.0": "One rule matches one rail type; the old comma separated list is no longer accepted."
 }

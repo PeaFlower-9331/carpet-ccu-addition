@@ -44,8 +44,8 @@ All rules live in Carpet's main settings manager: `/carpet <rule> <value>`. Cate
 | `commandBatchPlayerAction` | string | `"ops"` | CCU / fake_player / command | Permission level of the batch action command, same values as `commandPlayer` |
 | `commandPlayerLoadRange` | string | `"ops"` | CCU / fake_player / command | Permission level of the load range command, same values as `commandPlayer` |
 | `minecartChunkLoader` | boolean | `false` | CCU / minecart | Master switch of the minecart chunk loader |
-| `minecartLoaderTypes` | string | `"minecart"` | CCU / minecart | Minecart types that trigger loading, comma separated |
-| `minecartLoaderRails` | string | `"rail"` | CCU / minecart | Rail blocks that trigger loading, comma separated |
+| `minecartLoaderTypes` | preset | `minecart` | CCU / minecart | Cart type that triggers loading (one of the seven vanilla carts) |
+| `minecartLoaderRails` | preset | `detector_rail` | CCU / minecart | Rail type that triggers loading (one of the four vanilla rails) |
 | `minecartLoaderRange` | int | `2` | CCU / minecart | Chunk radius kept loaded around the cart (1-32) |
 | `minecartScanInterval` | int | `100` | CCU / minecart | Scan interval (ticks): rail checks, ticket renewal and discovery |
 | `noAmethystBudInWater` | boolean | `false` | CCU | Budding amethyst never grows buds on a face whose neighbour is water |

@@ -88,10 +88,10 @@ public final class CcuRules {
 	public static boolean minecartChunkLoader = false;
 
 	@Rule(categories = {CCU, CCU_MINECART, RuleCategory.FEATURE, RuleCategory.CREATIVE})
-	public static String minecartLoaderTypes = "minecart";
+	public static CartPreset minecartLoaderTypes = CartPreset.MINECART;
 
 	@Rule(categories = {CCU, CCU_MINECART, RuleCategory.FEATURE, RuleCategory.CREATIVE})
-	public static String minecartLoaderRails = "rail";
+	public static RailPreset minecartLoaderRails = RailPreset.DETECTOR_RAIL;
 
 	@Rule(categories = {CCU, CCU_MINECART, RuleCategory.FEATURE, RuleCategory.CREATIVE})
 	public static int minecartLoaderRange = 2;
@@ -112,4 +112,40 @@ public final class CcuRules {
 	 */
 	@Rule(categories = {CCU, RuleCategory.FEATURE, RuleCategory.SURVIVAL})
 	public static boolean noAmethystBudInWater = false;
+
+	// ---------------------------------------------------------------- 预设
+
+	/**
+	 * 铁轨预设：只列原版四种铁轨，省得记 id。
+	 *
+	 * <p>枚举常量名必须与注册表 id 一致（小写后 = {@code rail}、{@code powered_rail} …），
+	 * Carpet 会把枚举常量小写后当作可选值，并在 {@code /carpet} 里直接列出来。</p>
+	 */
+	public enum RailPreset {
+		RAIL,
+		POWERED_RAIL,
+		DETECTOR_RAIL,
+		ACTIVATOR_RAIL;
+
+		public String id() {
+			return name().toLowerCase(java.util.Locale.ROOT);
+		}
+	}
+
+	/**
+	 * 矿车预设：原版七种矿车，默认普通矿车。
+	 */
+	public enum CartPreset {
+		MINECART,
+		CHEST_MINECART,
+		HOPPER_MINECART,
+		TNT_MINECART,
+		SPAWNER_MINECART,
+		COMMAND_BLOCK_MINECART,
+		FURNACE_MINECART;
+
+		public String id() {
+			return name().toLowerCase(java.util.Locale.ROOT);
+		}
+	}
 }

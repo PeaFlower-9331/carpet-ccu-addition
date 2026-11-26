@@ -66,8 +66,8 @@ TicketType(CCU, 不持久化, 加载 + 模拟)
 | 规则 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | `minecartChunkLoader` | boolean | `false` | 总开关 |
-| `minecartLoaderTypes` | string | `"minecart"` | 触发加载的矿车种类，逗号分隔，可省略 `minecraft:` 前缀 |
-| `minecartLoaderRails` | string | `"rail"` | 触发加载的铁轨种类，逗号分隔，同上 |
+| `minecartLoaderTypes` | 预设 | `minecart` | 触发加载的矿车种类（单选）：`minecart` / `chest_minecart` / `hopper_minecart` / `tnt_minecart` / `spawner_minecart` / `command_block_minecart` / `furnace_minecart` |
+| `minecartLoaderRails` | 预设 | `detector_rail` | 触发加载的铁轨种类（单选）：`detector_rail` / `rail` / `powered_rail` / `activator_rail` |
 | `minecartLoaderRange` | int | `2` | 半径（区块），取值 1–32 |
 | `minecartScanInterval` | int | `100` | 扫描间隔（刻）：判定铁轨、续票、发现新车都在这一轮 |
 
@@ -77,16 +77,16 @@ TicketType(CCU, 不持久化, 加载 + 模拟)
 
 ```conf
 minecartChunkLoader true
-minecartLoaderTypes minecart,chest_minecart
-minecartLoaderRails rail,powered_rail
+minecartLoaderTypes minecart
+minecartLoaderRails detector_rail
 minecartLoaderRange 8
 ```
 
 也可以在游戏里逐条设：
 
 ```
-/carpet minecartLoaderTypes minecart,chest_minecart
-/carpet minecartLoaderRails rail,powered_rail
+/carpet minecartLoaderTypes minecart
+/carpet minecartLoaderRails detector_rail
 /carpet minecartLoaderRange 8
 /carpet minecartChunkLoader true
 ```

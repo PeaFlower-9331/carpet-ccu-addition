@@ -27,9 +27,9 @@
 	"carpet.rule.minecartChunkLoader.extra.0": "还要配合 minecartLoaderTypes（矿车种类）、minecartLoaderRails（铁轨种类）、minecartLoaderRange（半径）使用。",
 	"carpet.rule.minecartChunkLoader.extra.1": "加载票默认 15 秒过期、静止的矿车用 30 秒票：矿车开走、离开铁轨或消失后最多 30 秒自动卸载，存档里不留残留。",
 	"carpet.rule.minecartLoaderTypes.name": "加载器矿车种类",
-	"carpet.rule.minecartLoaderTypes.desc": "触发加载的矿车种类，逗号分隔，可省略 minecraft: 前缀，例如 minecart,chest_minecart,hopper_minecart。",
+	"carpet.rule.minecartLoaderTypes.desc": "触发加载的矿车种类（预设，单选）：minecart / chest_minecart / hopper_minecart / tnt_minecart / spawner_minecart / command_block_minecart / furnace_minecart，默认 minecart（普通矿车）。",
 	"carpet.rule.minecartLoaderRails.name": "加载器铁轨种类",
-	"carpet.rule.minecartLoaderRails.desc": "触发加载的铁轨种类，逗号分隔，例如 rail,powered_rail,detector_rail,activator_rail。",
+	"carpet.rule.minecartLoaderRails.desc": "触发加载的铁轨种类（预设，单选）：detector_rail / rail / powered_rail / activator_rail，默认 detector_rail（探测铁轨）。",
 	"carpet.rule.minecartLoaderRange.name": "加载器半径",
 	"carpet.rule.minecartLoaderRange.desc": "矿车周围保持加载的区块半径，取值 1–32，默认 2。",
 	"carpet.rule.minecartLoaderRange.extra.0": "覆盖的区块数按半径平方增长，设太大很吃性能。",
@@ -39,5 +39,7 @@
 	"carpet.rule.minecartScanInterval.extra.1": "连续两轮续票时矿车都在同一区块，会自动改用 30 秒的长票，静止的机器多留一倍容错。",
 	"carpet.rule.noAmethystBudInWater.name": "紫水晶不在水中长芽",
 	"carpet.rule.noAmethystBudInWater.desc": "紫水晶母岩不会在相邻方块是水的那个面上生长紫水晶芽。",
-	"carpet.rule.noAmethystBudInWater.extra.0": "只影响生成新芽；已经长出来的芽和簇不受影响。"
+	"carpet.rule.noAmethystBudInWater.extra.0": "只影响生成新芽；已经长出来的芽和簇不受影响。",
+	"carpet.rule.minecartLoaderTypes.extra.0": "一条规则只匹配一种矿车；以前那种逗号列表的写法不再支持。",
+	"carpet.rule.minecartLoaderRails.extra.0": "一条规则只匹配一种铁轨；以前那种逗号列表的写法不再支持。"
 }

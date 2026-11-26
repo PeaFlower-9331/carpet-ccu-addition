@@ -229,10 +229,10 @@ public final class MinecartChunkLoader {
 	private static final Set<UUID> IDLE = new HashSet<>();
 
 	/**
-	 * 规则字符串 -> 解析结果缓存。tick 每刻都会跑，不能每次都重新分配 Set。
+	 * 预设规则 -> 结果缓存。tick 每刻都会跑，不能每次都重新分配 Set。
 	 */
-	private static String cachedTypesRaw;
-	private static String cachedRailsRaw;
+	private static CcuRules.CartPreset cachedTypePreset;
+	private static CcuRules.RailPreset cachedRailPreset;
 	private static Set<String> cachedTypes = Set.of();
 	private static Set<String> cachedRails = Set.of();
 
@@ -246,25 +246,25 @@ public final class MinecartChunkLoader {
 	}
 
 	/**
-	 * 带缓存的 {@code minecartLoaderTypes} 解析结果：规则值不变时直接复用。
+	 * 带缓存的 {@code minecartLoaderTypes}：预设值不变时直接复用。
 	 */
 	private static Set<String> types() {
-		String raw = CcuRules.minecartLoaderTypes;
-		if (!raw.equals(cachedTypesRaw)) {
-			cachedTypesRaw = raw;
-			cachedTypes = parseIds(raw);
+		CcuRules.CartPreset preset = CcuRules.minecartLoaderTypes;
+		if (preset != cachedTypePreset) {
+			cachedTypePreset = preset;
+			cachedTypes = Set.of(preset.id());
 		}
 		return cachedTypes;
 	}
 
 	/**
-	 * 带缓存的 {@code minecartLoaderRails} 解析结果。
+	 * 带缓存的 {@code minecartLoaderRails}：预设值不变时直接复用。
 	 */
 	private static Set<String> rails() {
-		String raw = CcuRules.minecartLoaderRails;
-		if (!raw.equals(cachedRailsRaw)) {
-			cachedRailsRaw = raw;
-			cachedRails = parseIds(raw);
+		CcuRules.RailPreset preset = CcuRules.minecartLoaderRails;
+		if (preset != cachedRailPreset) {
+			cachedRailPreset = preset;
+			cachedRails = Set.of(preset.id());
 		}
 		return cachedRails;
 	}
@@ -777,22 +777,5 @@ public final class MinecartChunkLoader {
 	private static String normalize(String id) {
 		String path = id.toLowerCase(Locale.ROOT);
 		return path.startsWith("minecraft:") ? path.substring("minecraft:".length()) : path;
-	}
-
-	private static Set<String> parseIds(String raw) {
-		Set<String> ids = new HashSet<>();
-		if (raw == null || raw.isBlank()) {
-			return ids;
-		}
-		for (String part : raw.split("[,;\\s]+")) {
-			String id = part.strip().toLowerCase(Locale.ROOT);
-			if (id.startsWith("minecraft:")) {
-				id = id.substring("minecraft:".length());
-			}
-			if (!id.isEmpty()) {
-				ids.add(id);
-			}
-		}
-		return ids;
 	}
 }
