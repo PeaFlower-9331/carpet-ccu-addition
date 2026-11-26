@@ -47,6 +47,7 @@ All rules live in Carpet's main settings manager: `/carpet <rule> <value>`. Cate
 | `minecartLoaderTypes` | string | `"minecart"` | CCU / minecart | Minecart types that trigger loading, comma separated |
 | `minecartLoaderRails` | string | `"rail"` | CCU / minecart | Rail blocks that trigger loading, comma separated |
 | `minecartLoaderRange` | int | `2` | CCU / minecart | Chunk radius kept loaded around the cart (1-32) |
+| `minecartScanInterval` | int | `100` | CCU / minecart | Scan interval (ticks): rail checks, ticket renewal and discovery |
 | `noAmethystBudInWater` | boolean | `false` | CCU | Budding amethyst never grows buds on a face whose neighbour is water |
 | `debugLog` | boolean | `false` | CCU | Verbose lifecycle logging |
 

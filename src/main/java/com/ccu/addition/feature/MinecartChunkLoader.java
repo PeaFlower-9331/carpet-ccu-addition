@@ -39,16 +39,20 @@ import java.util.UUID;
  *
  * <p>实现要点：</p>
  * <ul>
- *     <li>ticket 类型自带 {@value #TICKET_TIMEOUT_TICKS} 刻超时，且不持久化；每 5 秒重复挂票会
- *     刷新超时（{@code TicketStorage.addTicket} 对同类型同等级的 ticket 调用 {@code resetTicksLeft}），
- *     矿车离开铁轨或消失后，票会在 15 秒内自然过期，不会留下残留。</li>
- *     <li>超时故意比续票间隔长，留两轮容错：矿车跨方块边界、上坡、被活塞推离轨道，
- *     或铁轨刚被拆掉的那一瞬间都可能判不到「在铁轨上」。只要不是连续两轮落空，
- *     区块就不会卸载——区块一旦卸载，矿车作为实体会被一起卸载，加载器就再也扫不到它。</li>
+ *     <li>判定与续票都只发生在每 {@code minecartScanInterval} 刻（默认 100 刻 = 5 秒）的一轮扫描里，
+ *     不做逐刻探测：一轮扫描的开销是「实体全量遍历 + 命中矿车各挂一次票」，
+ *     而挂一次票要按半径覆盖 {@code (2R+1)²} 个区块，逐刻续票的代价是这里的 20 倍以上。</li>
+ *     <li>每轮扫描只要矿车在指定铁轨上、或者正被活塞带动（{@code moving_piston}），就给它续票。</li>
+ *     <li>ticket 自带 {@value #TICKET_TIMEOUT_TICKS} 刻超时，且不持久化；每 5 秒重复挂票会刷新超时
+ *     （{@code TicketStorage.addTicket} 对同类型同等级的 ticket 调用 {@code resetTicksLeft}），
+ *     矿车离开铁轨或消失后票会自然过期，不会留下残留。</li>
+ *     <li><b>静止矿车换长票</b>：连续两轮续票时矿车都在同一区块，说明它没在动，
+ *     这一轮改用 {@value #IDLE_TICKET_TIMEOUT_TICKS} 刻（30 秒）的票，多留一倍容错。</li>
  *     <li>配合 {@link #RAIL_GRACE_TICKS} 的宽限：车最近一次确认在铁轨上之后 5 秒内，
- *     即使当前判定不到铁轨，仍继续续票。移动中的矿车靠这条穿越短暂的空档。</li>
- *     <li>矿车移动后旧区块的票不立刻撤销，最多残留 15 秒。</li>
- *     <li>只扫描已加载的实体，不会为了找矿车而强行加载区块。</li>
+ *     即使当轮判定不到铁轨，仍继续续票。移动中的矿车靠这条穿越短暂的空档，
+ *     也是「5 秒采样」能接住「只有 2 刻在铁轨上」的关键。</li>
+ *     <li>矿车移动后旧区块的票不立刻撤销，最多残留一轮票的有效期。</li>
+ *     <li>只扫描已加载的实体，不会为了找矿车而强行加载区块；已记下的锚点由保活逻辑续票。</li>
  * </ul>
  */
 public final class MinecartChunkLoader {
@@ -60,18 +64,21 @@ public final class MinecartChunkLoader {
 	private static final int MAX_SCAN_INTERVAL = 1200;
 
 	/**
-	 * 已认定矿车探测间隔的兜底范围，实际值来自规则 {@code minecartProbeInterval}。
-	 */
-	private static final int MIN_PROBE_INTERVAL = 1;
-	private static final int MAX_PROBE_INTERVAL = 100;
-
-	/**
 	 * 票据有效期：15 秒（300 刻），是续票间隔的 3 倍。
 	 *
 	 * <p>留出两轮容错，专为移动中的矿车准备：一轮判定落空（跨方块、上坡、被推离轨道、
 	 * 铁轨刚被拆）不会让票过期，下一轮补上就能接住。代价是矿车消失后最多残留 15 秒。</p>
 	 */
 	private static final int TICKET_TIMEOUT_TICKS = 300;
+
+	/**
+	 * 静止矿车的票据有效期：30 秒（600 刻）。
+	 *
+	 * <p>连续两轮续票时矿车都停在同一区块，说明它不是正在移动的加载器（机器停了、或者这条产线
+	 * 一时半会儿不会动），这时换用更长的票：同样的续票频率下多留一倍余量，机器停着的时候
+	 * 服务器卡一下、或者某一轮恰好错过判定窗口，都不至于把区块掉下去。</p>
+	 */
+	private static final int IDLE_TICKET_TIMEOUT_TICKS = 600;
 
 	/**
 	 * 铁轨判定的宽限：矿车最近一次被确认停在指定铁轨上之后这么久之内，
@@ -104,17 +111,27 @@ public final class MinecartChunkLoader {
 	private static final long ANCHOR_KEEPALIVE_MS = 120_000L;
 
 	/**
-	 * 锚点过期：连续 30 秒没有被识别（既不在指定铁轨上、也没被活塞带动）就丢弃锚点并落盘。
+	 * 锚点过期：连续 2 分钟没有被识别（既不在指定铁轨上、也没被活塞带动）就丢弃锚点并落盘。
 	 *
-	 * <p>这样「铁轨被拆 / 车被推离」的锚点会在运行期间清掉，不会留到下次重启时白加载一次。
-	 * 判定放在每轮扫描之后，保证「这一轮刚好匹配上」的车不会被误删。</p>
+	 * <p>判定只在每 {@code minecartScanInterval} 刻的全量扫描里做一次。矿车可能整个推进周期里
+	 * 只有 2 刻停在目标铁轨上，5 秒一次的采样本来就会漏几轮，窗口太短会把还在干活的矿车误删；
+	 * 两分钟足够跨过几十轮采样，又不会让「铁轨被拆 / 车被推走」的锚点永久留着。</p>
 	 */
-	private static final long ANCHOR_EXPIRE_MS = 30_000L;
+	private static final long ANCHOR_EXPIRE_MS = 120_000L;
 
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
 	private static final TicketType MINECART_TICKET = new TicketType(
 			TICKET_TIMEOUT_TICKS,
+			TicketType.FLAG_LOADING | TicketType.FLAG_SIMULATION
+	);
+
+	/**
+	 * 静止矿车用的长票（{@value #IDLE_TICKET_TIMEOUT_TICKS} 刻）。两种票并存不冲突：
+	 * {@code TicketStorage} 按「类型 + 等级」去重，旧票到期自然消失。
+	 */
+	private static final TicketType MINECART_TICKET_IDLE = new TicketType(
+			IDLE_TICKET_TIMEOUT_TICKS,
 			TicketType.FLAG_LOADING | TicketType.FLAG_SIMULATION
 	);
 
@@ -202,14 +219,14 @@ public final class MinecartChunkLoader {
 	private static final Map<UUID, Long> LAST_MATCHED = new HashMap<>();
 
 	/**
-	 * 上一轮全量扫描以来，逐刻探测命中过的矿车（仅用于诊断输出）。
+	 * 矿车 UUID -> 上一次续票时所在的区块，用来判断矿车这两轮有没有动。
 	 */
-	private static final Set<UUID> PROBE_HITS = new HashSet<>();
+	private static final Map<UUID, ChunkPos> LAST_GRANT_POS = new HashMap<>();
 
 	/**
-	 * 上一次诊断输出的逐刻探测命中数，用来只在变化时打一行。
+	 * 当前正在用 30 秒长票的矿车，仅用于「长票 / 短票」切换时打一行日志。
 	 */
-	private static int lastProbeHits = -1;
+	private static final Set<UUID> IDLE = new HashSet<>();
 
 	/**
 	 * 规则字符串 -> 解析结果缓存。tick 每刻都会跑，不能每次都重新分配 Set。
@@ -259,13 +276,6 @@ public final class MinecartChunkLoader {
 		return Math.max(MIN_SCAN_INTERVAL, Math.min(MAX_SCAN_INTERVAL, CcuRules.minecartScanInterval));
 	}
 
-	/**
-	 * @return 已认定矿车的探测间隔（刻），由规则 {@code minecartProbeInterval} 提供并做范围兜底
-	 */
-	private static int probeInterval() {
-		return Math.max(MIN_PROBE_INTERVAL, Math.min(MAX_PROBE_INTERVAL, CcuRules.minecartProbeInterval));
-	}
-
 	public static void tick(MinecraftServer server) {
 		if (!CcuRules.minecartChunkLoader) {
 			return;
@@ -278,13 +288,7 @@ public final class MinecartChunkLoader {
 		int now = server.getTickCount();
 		long nowMs = System.currentTimeMillis();
 
-		// 已认定矿车的轻量探测（按 UUID 直查，不做全量遍历）。默认每刻一次：
-		// 矿车可能整个推进周期里只有 2 刻在铁轨上，采样间隔稍大就会整段错过。
-		if (!types.isEmpty() && !rails.isEmpty() && now % probeInterval() == 0) {
-			probeAnchors(server, rails, ticketRadius, now, nowMs);
-		}
-
-		// 全量扫描：发现新矿车并出诊断（间隔由 minecartScanInterval 控制，默认 100 刻）
+		// 全量扫描：发现新矿车、判定铁轨、续票，一并出诊断（间隔由 minecartScanInterval 控制，默认 100 刻）
 		if (now % scanInterval() != 0) {
 			return;
 		}
@@ -347,7 +351,7 @@ public final class MinecartChunkLoader {
 				}
 
 				// +2：把「半径 R 内实体刻」换算成 addTicketWithRadius 需要的 ticket 半径
-				level.getChunkSource().addTicketWithRadius(MINECART_TICKET, entity.chunkPosition(), ticketRadius);
+				grantTicket(level, cartId, entity.chunkPosition(), ticketRadius);
 				matched++;
 				recordAnchor(level, entity, nowMs);
 				if (CcuRules.debugLog && hitPositions.size() < MAX_SAMPLES) {
@@ -359,15 +363,10 @@ public final class MinecartChunkLoader {
 			}
 		}
 
-		int probeHits = PROBE_HITS.size();
-		PROBE_HITS.clear();
-		if (probeHits > 0 && probeHits != lastProbeHits) {
-			CcuServer.debug("矿车加载器：轻量探测维持 %d 辆（不依赖全量扫描）", probeHits);
-		}
-		lastProbeHits = probeHits;
-
 		// 清理长期没再出现过的矿车（宽限早已失效，留着没用），避免映射随矿车数量无限增长
 		LAST_ON_RAIL.entrySet().removeIf(entry -> now - entry.getValue() > RAIL_GRACE_TICKS * 2);
+		LAST_GRANT_POS.keySet().removeIf(id -> !ANCHORS.containsKey(id));
+		IDLE.retainAll(ANCHORS.keySet());
 
 		// 过期判定放在扫描之后：本轮刚匹配上的车不会被误删
 		expireAnchors(nowMs);
@@ -544,44 +543,6 @@ public final class MinecartChunkLoader {
 	}
 
 	/**
-	 * 每刻轻量探测「已认定」的矿车：按 UUID 直接取实体，检查是否在指定铁轨上或被活塞带动。
-	 *
-	 * <p>成本只与锚点数量有关，与世界上的实体总数无关；因此可以每刻跑，稳定捕捉到
-	 * 只有 2 刻宽的判定窗口，不会像 100 刻全量扫描那样被采样相位卡死。
-	 * 新车仍然由全量扫描负责发现。</p>
-	 */
-	private static void probeAnchors(MinecraftServer server, Set<String> rails, int ticketRadius,
-	                                 int now, long nowMs) {
-		if (ANCHORS.isEmpty()) {
-			return;
-		}
-		Map<String, ServerLevel> levels = new HashMap<>();
-		for (ServerLevel level : server.getAllLevels()) {
-			levels.put(DimensionIds.of(level.dimension()), level);
-		}
-		for (Map.Entry<UUID, Anchor> entry : ANCHORS.entrySet()) {
-			ServerLevel level = levels.get(entry.getValue().dimensionId());
-			if (level == null) {
-				continue;
-			}
-			Entity cart = level.getEntity(entry.getKey());
-			if (cart == null || cart.isRemoved()) {
-				continue;
-			}
-			boolean onRail = isOnRail(level, cart, rails);
-			if (!onRail && !isOnMovingPiston(level, cart)) {
-				continue;
-			}
-			if (onRail) {
-				LAST_ON_RAIL.put(entry.getKey(), now);
-			}
-			level.getChunkSource().addTicketWithRadius(MINECART_TICKET, cart.chunkPosition(), ticketRadius);
-			recordAnchor(level, cart, nowMs);
-			PROBE_HITS.add(entry.getKey());
-		}
-	}
-
-	/**
 	 * 自举：把锚点记录的区块加载出来，让矿车实体重新进入世界。
 	 *
 	 * <p>区块真正加载出来后就能判断矿车还在不在：在就交给正常扫描接管，不在就丢掉这条锚点。
@@ -613,6 +574,7 @@ public final class MinecartChunkLoader {
 						CcuServer.debug("矿车加载器：锚点区块已加载但没有这辆矿车，丢弃锚点 %s @ %s", id, anchor.pos());
 						ANCHORS.remove(id);
 						LAST_MATCHED.remove(id);
+						LAST_GRANT_POS.remove(id);
 						anchorsDirty = true;
 					}
 					iterator.remove();
@@ -628,7 +590,7 @@ public final class MinecartChunkLoader {
 					continue;
 				}
 				// 先挂票把区块拉起来，下一轮（或下下轮）就能看到矿车
-				level.getChunkSource().addTicketWithRadius(MINECART_TICKET, anchor.pos(), ticketRadius);
+				grantTicket(level, id, anchor.pos(), ticketRadius);
 			}
 		}
 
@@ -648,7 +610,7 @@ public final class MinecartChunkLoader {
 			if (level == null) {
 				continue;
 			}
-			level.getChunkSource().addTicketWithRadius(MINECART_TICKET, entry.getValue().pos(), ticketRadius);
+			grantTicket(level, entry.getKey(), entry.getValue().pos(), ticketRadius);
 			keepAlive++;
 		}
 		if (keepAlive > 0 && keepAlive != lastKeepAlive) {
@@ -676,6 +638,8 @@ public final class MinecartChunkLoader {
 				}
 				if (level.getEntity(entry.getKey()) == null) {
 					LAST_MATCHED.remove(entry.getKey());
+					LAST_GRANT_POS.remove(entry.getKey());
+					IDLE.remove(entry.getKey());
 					iterator.remove();
 					removedAny = true;
 				}
@@ -713,12 +677,38 @@ public final class MinecartChunkLoader {
 					entry.getKey(), ANCHOR_EXPIRE_MS / 1000, entry.getValue().pos());
 			LAST_ON_RAIL.remove(entry.getKey());
 			LAST_MATCHED.remove(entry.getKey());
+			LAST_GRANT_POS.remove(entry.getKey());
+			IDLE.remove(entry.getKey());
 			iterator.remove();
 			removed = true;
 		}
 		if (removed) {
 			anchorsDirty = true;
 		}
+	}
+
+	/**
+	 * 给一辆矿车续票：本轮位置与上一轮相同就换用 30 秒的长票，否则用默认的 15 秒票。
+	 *
+	 * <p>「同一位置」按区块算而不是按精确坐标：矿车停在原地时可能因为被挤压、贴轨而
+	 * 抖动零点几个方块，按坐标比会被当成「在动」，按区块比才稳定。</p>
+	 */
+	private static void grantTicket(ServerLevel level, UUID cartId, ChunkPos pos, int ticketRadius) {
+		ChunkPos previous = LAST_GRANT_POS.put(cartId, pos);
+		boolean idle = pos.equals(previous);
+		if (idle != IDLE.contains(cartId)) {
+			if (idle) {
+				IDLE.add(cartId);
+				CcuServer.debug("矿车加载器：矿车 %s 连续两轮没动，本轮改用 %d 秒长票 @ %s",
+						cartId, IDLE_TICKET_TIMEOUT_TICKS / 20, pos);
+			} else {
+				IDLE.remove(cartId);
+				CcuServer.debug("矿车加载器：矿车 %s 又动起来了，恢复 %d 秒票 @ %s",
+						cartId, TICKET_TIMEOUT_TICKS / 20, pos);
+			}
+		}
+		level.getChunkSource().addTicketWithRadius(
+				idle ? MINECART_TICKET_IDLE : MINECART_TICKET, pos, ticketRadius);
 	}
 
 	/**

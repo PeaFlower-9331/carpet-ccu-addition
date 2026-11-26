@@ -97,16 +97,10 @@ public final class CcuRules {
 	public static int minecartLoaderRange = 2;
 
 	/**
-	 * 已认定矿车的探测间隔（刻）。这些车按 UUID 直接查，不看世界上有多少实体，
-	 * 所以默认可以每刻跑一次——矿车可能整个推进周期里只有 2 刻在铁轨上，
-	 * 采样间隔稍大就会整段错过。调大只是省 CPU，代价是可能漏判。
-	 */
-	@Rule(categories = {CCU, CCU_MINECART, RuleCategory.FEATURE, RuleCategory.CREATIVE})
-	public static int minecartProbeInterval = 1;
-
-	/**
-	 * 全量扫描间隔（刻），只负责发现还没被认定过的矿车。
-	 * 已认定的车由 {@link #minecartProbeInterval} 按 UUID 探测，不受这条影响。
+	 * 扫描间隔（刻）。判定铁轨、续票、发现新矿车都在这一轮里做，默认 100 刻（5 秒）。
+	 *
+	 * <p>调小可以让判定更及时（矿车整个推进周期里可能只有 2 刻停在目标铁轨上），
+	 * 代价是每轮都要遍历一次实体、并按半径给命中矿车挂票；调大则相反。</p>
 	 */
 	@Rule(categories = {CCU, CCU_MINECART, RuleCategory.FEATURE, RuleCategory.CREATIVE})
 	public static int minecartScanInterval = 100;
