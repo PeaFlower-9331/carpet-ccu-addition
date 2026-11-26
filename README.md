@@ -42,13 +42,11 @@
 | `fakePlayerSpawnPreload` | boolean | `true` | CCU / 假人 | `/player <名字> spawn` 时先异步预加载档案再召唤，避免召唤卡顿 |
 | `fakePlayerRejoinKeepRiding` | boolean | `true` | CCU / 假人 | 假人重新上线（TIS `rejoin` / GCA 假人驻留）后回到原来乘坐的载具 |
 | `commandBatchPlayerAction` | string | `"ops"` | CCU / 假人 / command | 批量假人动作命令的可用级别，取值同 `commandPlayer` |
-| `commandPlayerLoadRange` | string | `"ops"` | CCU / 假人 / command | 加载范围命令的可用级别，取值同 `commandPlayer` |
 | `minecartChunkLoader` | boolean | `false` | CCU / 矿车 | 矿车加载器总开关 |
 | `minecartLoaderTypes` | 预设 | `minecart` | CCU / 矿车 | 触发加载的矿车种类（单选，原版七种之一） |
 | `minecartLoaderRails` | 预设 | `detector_rail` | CCU / 矿车 | 触发加载的铁轨种类（单选，原版四种之一） |
 | `minecartLoaderRange` | int | `2` | CCU / 矿车 | 矿车周围保持加载的区块半径（1–32） |
 | `minecartScanInterval` | int | `100` | CCU / 矿车 | 扫描间隔（刻）：判定铁轨、续票、发现新车都在这一轮 |
-| `noAmethystBudInWater` | boolean | `false` | CCU | 紫水晶母岩不在相邻方格是水的面上生长紫水晶芽 |
 | `debugLog` | boolean | `false` | CCU | 输出详细生命周期日志，便于排查 |
 
 ## 命令
@@ -96,18 +94,6 @@
 
 两个前置 mod 都没装时规则不生效，也不会报错。
 
-### 假人加载范围
-
-```
-/player <假人名> load [半径|default]
-```
-
-```bash
-/player bot1 load            # 查看当前设置
-/player bot1 load 8          # 调到 8 区块（只能调大，无法小于服务器视距）
-/player bot1 load default    # 恢复默认
-```
-
 ## 构建
 
 需要 JDK 21。
@@ -134,7 +120,7 @@ carpet-ccu-addition/
     │   ├── CcuRules.java            # 全部规则字段
     │   ├── CcuRuleRegistrar.java    # 规则注册进 /carpet
     │   ├── command/                 # 并入原生命令树的子命令
-    │   └── feature/                 # 档案预加载 / 加载范围 / 矿车加载器
+    │   └── feature/                 # 档案预加载 / 载具恢复 / 矿车加载器
     └── resources/assets/carpet-ccu-addition/lang/
 ```
 

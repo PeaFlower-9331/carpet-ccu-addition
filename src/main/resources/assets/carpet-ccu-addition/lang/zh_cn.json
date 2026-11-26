@@ -18,10 +18,6 @@
 	"carpet.rule.commandBatchPlayerAction.extra.0": "用法：/playerManager batch <前缀> <起始> <结束> <动作>，例如 batch bot 1 45 use continuous、batch bot 1 45 stop。",
 	"carpet.rule.commandBatchPlayerAction.extra.1": "目标写法与 Carpet Org 一致：batch bot 1 45 对应 bot_1…bot_45；前缀 all 或 * 表示全部假人。",
 	"carpet.rule.commandBatchPlayerAction.extra.2": "与 Carpet Org 重名的 spawn/kill/drop/trial 仍用 Carpet Org 自己的实现，不被本模组覆盖。",
-	"carpet.rule.commandPlayerLoadRange.name": "假人加载范围命令",
-	"carpet.rule.commandPlayerLoadRange.desc": "开启 /player <假人名> load [半径|default]：给单个假人调大加载范围（区块数）。只能调大，压不到服务器视距以下。取值 false / true / ops / 0-4，含义与 commandPlayer 相同。",
-	"carpet.rule.commandPlayerLoadRange.extra.0": "例如 /player bot1 load 10；/player bot1 load default 恢复成跟随服务器视距。",
-	"carpet.rule.commandPlayerLoadRange.extra.1": "没设置的假人不额外加载，行为与原版一致；填的值不大于服务器视距时不会产生额外效果。",
 	"carpet.rule.minecartChunkLoader.name": "矿车加载器",
 	"carpet.rule.minecartChunkLoader.desc": "开启矿车加载器：每 minecartScanInterval 刻（默认 100 刻）扫描一次，指定种类的矿车停在指定种类的铁轨上、或正被活塞带动时，给它周围的区块挂加载票，保持加载与实体刻。",
 	"carpet.rule.minecartChunkLoader.extra.0": "还要配合 minecartLoaderTypes（矿车种类）、minecartLoaderRails（铁轨种类）、minecartLoaderRange（半径）使用。",
@@ -37,9 +33,6 @@
 	"carpet.rule.minecartScanInterval.desc": "扫描间隔（刻），默认 100 刻（20 tps 下约 5 秒）。判定铁轨、续票、发现新矿车都在这一轮里完成；只扫描已加载的区块，不会为了找车强行加载。",
 	"carpet.rule.minecartScanInterval.extra.0": "调小判定更及时（矿车推进周期里可能只有 2 刻停在目标铁轨上），代价是每轮都要遍历实体并挂票；调大更省，但可能漏判。",
 	"carpet.rule.minecartScanInterval.extra.1": "连续两轮续票时矿车都在同一区块，会自动改用 30 秒的长票，静止的机器多留一倍容错。",
-	"carpet.rule.noAmethystBudInWater.name": "紫水晶不在水中长芽",
-	"carpet.rule.noAmethystBudInWater.desc": "紫水晶母岩不会在相邻方块是水的那个面上生长紫水晶芽。",
-	"carpet.rule.noAmethystBudInWater.extra.0": "只影响生成新芽；已经长出来的芽和簇不受影响。",
 	"carpet.rule.minecartLoaderTypes.extra.0": "一条规则只匹配一种矿车；以前那种逗号列表的写法不再支持。",
 	"carpet.rule.minecartLoaderRails.extra.0": "一条规则只匹配一种铁轨；以前那种逗号列表的写法不再支持。"
 }

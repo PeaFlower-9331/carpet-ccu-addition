@@ -8,52 +8,6 @@
 | `fakePlayerSpawnPreload` | boolean | `true` | CCU / CCU_fake_player / survival / feature | 召唤假人时先异步预加载档案再召唤，避免卡顿 |
 | `fakePlayerRejoinKeepRiding` | boolean | `true` | CCU / CCU_fake_player / survival / feature | 假人重新上线（TIS rejoin / GCA 假人驻留）后回到原来乘坐的载具 |
 | `commandBatchPlayerAction` | string | `"ops"` | CCU / CCU_fake_player / command | 批量假人动作的可用级别，取值同 `commandPlayer` |
-| `commandPlayerLoadRange` | string | `"ops"` | CCU / CCU_fake_player / command | `/player <名字> load` 的可用级别，取值同 `commandPlayer` |
-
-## 假人加载范围
-
-> 分类：`CCU` / `假人`（`CCU_fake_player`）。**只能调大，不能缩小。**
-
-### 命令
-
-命令已并入 Carpet 的 `/player`，没有额外的独立命令：
-
-```
-/player bot1 load              # 查看 bot1 当前的设置
-/player bot1 load 8            # 把 bot1 的加载范围调到 8 区块（实体刻）
-/player bot1 load default      # 恢复默认：跟随服务器视距
-```
-
-- 未设置的假人**不额外加载**，行为与原版完全一致（只按服务器 `view-distance` 加载）。
-- 设置按假人**名字**保存，写在 `config/carpet-ccu-addition/load-range.json`，假人重新召唤、服务器重启后都继续生效。
-- 半径范围 `1`–`32`；`default` 或 `-1` 表示清除。
-- **只能调大**：填的值不大于服务器视距时不会产生额外效果，命令会直接提示。
-
-### 为什么只能调大
-
-原版对玩家（包括假人）的区块加载半径是由服务器视距 / 模拟距离**统一**决定的，没有按玩家单独配置的入口；
-而区块 ticket 只能叠加、不能抵消。所以「给某个假人缩小」做不到——原版那部分 ticket 压不下去。
-
-本功能因此只能做加法：给指定假人**额外挂一个区块 ticket**，把它周围更多区块强制保持加载。
-
-```
-TicketType(CCU, 不持久化, 加载 + 模拟)
-  → ServerChunkCache#addTicketWithRadius(type, 假人所在区块, 半径 + 2)
-```
-
-换算关系：`TicketStorage#addTicketWithRadius(type, pos, r)` 创建的 ticket 等级是 `33 - r`，
-而 ticket 等级每远离一个区块 +1，实体刻要求等级 ≤ 31；因此想要「半径 R 内实体刻」需要传 `R + 2`。
-
-假人移动超过一个区块或半径变化时会撤销旧 ticket、挂新 ticket；假人下线立即撤销。
-
-### 注意
-
-| 事项 | 说明 |
-| --- | --- |
-| 只能调大，不能缩小 | 原版对玩家本身就有视距范围内的 ticket，设置值 ≤ 服务器视距时效果等同未设置 |
-| ticket 不持久化 | 类型不带 `FLAG_PERSIST`，重启后不会在存档里留下残留 |
-| 开销 | 半径每 +1，ticket 覆盖的区块按平方增长，32 区块 ≈ 4000+ 区块，注意服务器性能 |
-| 生效延迟 | 新区块需要生成，半径较大时第一次生效可能要几秒到十几秒 |
 
 ## 矿车加载器
 
@@ -170,7 +124,6 @@ Tab 补全按动作树走，和直接打 `/player <名字> ` 之后完全一致�
 /playerManager batch bot 1 45 attack interval 5  # 批量每 5 刻攻击一次
 /playerManager batch bot 1 45 look north          # 批量转向
 /playerManager batch bot 1 45 hotbar 3            # 批量切到第 3 格
-/playerManager batch bot 1 45 load 10             # 批量调加载范围
 /playerManager batch all 1 1 stop                 # 全部停下
 ```
 
@@ -285,12 +238,11 @@ Carpet 的 `/player <名字> spawn` 在真正创建假人前要先解析玩家�
 
 ### 验证
 
-打开 `debugLog` 后，正常恢复会看到（第三行是假人加载范围也一并生效）：
+打开 `debugLog` 后，正常恢复会看到：
 
 ```
 假人 Bot1 的存档里记着载具 <uuid>，等它所在区块加载后恢复骑乘
 假人 Bot1 已恢复乘坐载具 entity.minecraft.minecart @ BlockPos{x=1, y=-60, z=1}
-假人 Bot1：已挂额外加载票，半径 10 区块 @ [0, 0]
 ```
 
 放弃恢复时会打印原因：
@@ -310,14 +262,3 @@ Carpet 的 `/player <名字> spawn` 在真正创建假人前要先解析玩家�
 1. `CcuRules` 加带 `@Rule` 的 `public static` 字段；
 2. `assets/carpet_ccu/lang/{en_us,zh_cn}.json` 补 `carpet.rule.<字段名>.name` / `.desc`；
 3. 在功能代码里读字段，并同步更新本文件。
-## 紫水晶芽
-
-分类：CCU。规则：
-noAmethystBudInWater（boolean，默认 false）。
-
-开启后，紫水晶母岩**不会在相邻方格是水的面上生长紫水晶芽**。
-
-- 原版 BuddingAmethystBlock#canClusterGrowAtState 对「空气」与「水源方块」都返回 true，所以母岩会在水里长芽；
-  本规则在判定阶段直接对水返回 false。
-- 只影响**生成新芽**：已经长出来的芽、以及芽升级成更大的芽/簇，都不受影响。
-- 用 /carpet noAmethystBudInWater true 开关即可，无需重启。

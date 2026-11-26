@@ -18,10 +18,6 @@
 	"carpet.rule.commandBatchPlayerAction.extra.0": "Usage: /playerManager batch <prefix> <start> <end> <action>, e.g. batch bot 1 45 use continuous or batch bot 1 45 stop.",
 	"carpet.rule.commandBatchPlayerAction.extra.1": "Targets follow Carpet Org's convention: batch bot 1 45 means bot_1..bot_45; prefix all or * targets every fake player.",
 	"carpet.rule.commandBatchPlayerAction.extra.2": "spawn/kill/drop/trial keep Carpet Org's own implementation and are not overridden.",
-	"carpet.rule.commandPlayerLoadRange.name": "Player load range command",
-	"carpet.rule.commandPlayerLoadRange.desc": "Enables /player <bot> load [radius|default] to enlarge a single fake player's chunk loading range. Enlarge only - it can never go below the server view distance. Values: false / true / ops / 0-4, same as commandPlayer.",
-	"carpet.rule.commandPlayerLoadRange.extra.0": "For example /player bot1 load 10; /player bot1 load default restores the server view distance behaviour.",
-	"carpet.rule.commandPlayerLoadRange.extra.1": "Bots without a setting load chunks exactly like vanilla; a radius not larger than the server view distance has no extra effect.",
 	"carpet.rule.minecartChunkLoader.name": "Minecart chunk loader",
 	"carpet.rule.minecartChunkLoader.desc": "Enables the minecart chunk loader: every minecartScanInterval ticks (default 100) it scans once and, for matching carts standing on a matching rail or carried by a piston, grants loading tickets around them to keep chunks loaded and ticking.",
 	"carpet.rule.minecartChunkLoader.extra.0": "Also needs minecartLoaderTypes, minecartLoaderRails and minecartLoaderRange.",
@@ -37,9 +33,6 @@
 	"carpet.rule.minecartScanInterval.desc": "Scan interval in ticks, default 100 (about 5 seconds at 20 tps). Rail checks, ticket renewal and discovery of new carts all happen in this one pass; only loaded chunks are scanned.",
 	"carpet.rule.minecartScanInterval.extra.0": "Smaller means faster detection (a cart may only sit on the rail for 2 ticks per machine cycle) but an entity sweep and ticket grants every pass; larger is cheaper but may miss.",
 	"carpet.rule.minecartScanInterval.extra.1": "When a cart stays in the same chunk on two consecutive grants, it switches to the 30-second ticket, giving parked machines twice the slack.",
-	"carpet.rule.noAmethystBudInWater.name": "No amethyst bud in water",
-	"carpet.rule.noAmethystBudInWater.desc": "Budding amethyst never grows a bud on a face whose neighbouring block is water.",
-	"carpet.rule.noAmethystBudInWater.extra.0": "Only affects newly grown buds; existing buds and clusters are untouched.",
 	"carpet.rule.minecartLoaderTypes.extra.0": "One rule matches one cart type; the old comma separated list is no longer accepted.",
 	"carpet.rule.minecartLoaderRails.extra.0": "One rule matches one rail type; the old comma separated list is no longer accepted."
 }

@@ -5,8 +5,6 @@ import carpet.CarpetServer;
 import carpet.api.settings.Rule;
 import carpet.utils.Translations;
 import com.ccu.addition.command.BatchPlayerActionCommand;
-import com.ccu.addition.command.LoadRangeCommand;
-import com.ccu.addition.feature.FakePlayerChunkLoader;
 import com.ccu.addition.feature.FakePlayerRideRestore;
 import com.ccu.addition.feature.MinecartChunkLoader;
 import net.minecraft.server.MinecraftServer;
@@ -37,11 +35,6 @@ public class CcuServer implements CarpetExtension {
 	 */
 	private boolean commandsAttached = false;
 
-	/**
-	 * 加载范围是否已并入 Carpet 的 /player 命令。
-	 */
-	private boolean loadRangeAttached = false;
-
 
 	/**
 	 * 挂载尝试次数上限，避免没装 Carpet Org 时每刻重复扫描命令树。
@@ -68,12 +61,8 @@ public class CcuServer implements CarpetExtension {
 	@Override
 	public void onServerLoaded(MinecraftServer server) {
 		debug("服务器已加载");
-		// 先挂 /player <名字> load，再把 /player 的动作整棵复制到 Carpet Org 的批量命令下：
-		// 顺序反了会漏掉 load 这个动作
-		loadRangeAttached = LoadRangeCommand.attachToPlayerCommand(server) > 0;
+		// 把 /player 的动作整棵复制到 Carpet Org 的批量命令下
 		commandsAttached = BatchPlayerActionCommand.attachToBatchCommand(server) > 0;
-		// 读取假人加载范围配置（按名字保存，重新召唤后依然生效）
-		FakePlayerChunkLoader.load();
 		// 读取矿车锚点：重启后先把这些矿车所在区块加载起来，否则扫不到实体、加载器会一直空转
 		MinecartChunkLoader.loadAnchors();
 	}
@@ -90,13 +79,8 @@ public class CcuServer implements CarpetExtension {
 		if (!commandsAttached && attachAttempts < 3) {
 			// 命令树可能晚于 onServerLoaded 建好，这里兜底重试几次（没装 Carpet Org 时不做无谓尝试）
 			attachAttempts++;
-			if (!loadRangeAttached) {
-				loadRangeAttached = LoadRangeCommand.attachToPlayerCommand(server) > 0;
-			}
 			commandsAttached = BatchPlayerActionCommand.attachToBatchCommand(server) > 0;
 		}
-		// 假人加载范围：按配置给假人维持区块 ticket（内部每 20 刻对账一次）
-		FakePlayerChunkLoader.tick(server);
 		// 假人重新上线后回到原来的载具（GCA 假人驻留 / TIS rejoin）
 		FakePlayerRideRestore.tick(server);
 		// 矿车加载器：每 5 秒给符合条件的矿车续一次加载票
@@ -113,10 +97,6 @@ public class CcuServer implements CarpetExtension {
 	@Override
 	public void onPlayerLoggedOut(ServerPlayer player) {
 		debug("玩家登出：%s", player.getScoreboardName());
-		// 假人下线时立刻撤掉它的额外加载 ticket
-		if (player.level() instanceof net.minecraft.server.level.ServerLevel level) {
-			FakePlayerChunkLoader.forget(level.getServer(), player.getUUID());
-		}
 		FakePlayerRideRestore.forget(player.getUUID());
 	}
 
@@ -130,8 +110,7 @@ public class CcuServer implements CarpetExtension {
 	@Override
 	public void onReload(MinecraftServer server) {
 		debug("服务器 /reload");
-		// 资源重载会重建命令树，需要重新挂载（顺序同 onServerLoaded）
-		LoadRangeCommand.attachToPlayerCommand(server);
+		// 资源重载会重建命令树，需要重新挂载
 		BatchPlayerActionCommand.attachToBatchCommand(server);
 	}
 

@@ -74,8 +74,6 @@ public final class BatchPlayerActionCommand {
 	/**
 	 * 把 {@code /player} 的每个动作挂到 Carpet Org Addition 的批量命令下。
 	 *
-	 * <p>必须在 {@code LoadRangeCommand} 之后调用：{@code /player <名字> load} 是本模组后加的，
-	 * 早于它挂载就会漏掉这个动作。</p>
 	 *
 	 * @return 实际挂载到的命令数量（命令有多个别名时每个算一个）
 	 */
