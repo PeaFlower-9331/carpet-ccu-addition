@@ -56,20 +56,21 @@
 
 ### 批量假人动作
 
-需要 Carpet Org Addition。对一批假人执行任意 `/player` 动作：
+需要 Carpet Org Addition。`/player` 的每个动作都挂成它自带 `spawn` / `kill` / `drop` 的兄弟子命令：
 
 ```
-/playerManager batch action <名字前缀|all> <动作>
+/playerManager batch <前缀> <起始> <结束> <动作> [动作参数...]
 ```
 
 ```bash
-/playerManager batch action bot use continuous     # 批量连续右键
-/playerManager batch action bot jump               # 批量跳
-/playerManager batch action bot attack interval 5  # 每 5 刻攻击一次
-/playerManager batch action all stop               # 全部停下
+/playerManager batch bot 1 45 use continuous      # 批量连续右键
+/playerManager batch bot 1 45 attack interval 5  # 每 5 刻攻击一次
+/playerManager batch bot 1 45 look north          # 批量转向
+/playerManager batch all 1 1 stop                 # 全部停下
 ```
 
-动作列表由 `/player` 命令树实时生成，`/playerManager batch action`（不带参数）即可查看。
+动作名与参数都有 Tab 补全，节点直接从 `/player` 命令树复制，Carpet 新增动作会自动出现。
+目标写法与 Carpet Org 一致：`batch bot 1 45` 对应 `bot_1` … `bot_45`。
 
 ### 假人上线后保留载具
 

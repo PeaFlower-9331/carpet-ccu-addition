@@ -56,18 +56,23 @@ Both commands are merged into existing command trees; this mod registers no stan
 
 ### Batch fake player actions
 
-Requires Carpet Org Addition. Runs any `/player` action on a group of bots:
+Requires Carpet Org Addition. Every `/player` action is mounted next to its built-in
+`spawn` / `kill` / `drop` subcommands:
 
 ```
-/playerManager batch action <name prefix|all> <action>
+/playerManager batch <prefix> <start> <end> <action> [arguments...]
 ```
 
 ```bash
-/playerManager batch action bot use continuous     # continuous right click
-/playerManager batch action bot jump               # jump
-/playerManager batch action bot attack interval 5  # attack every 5 ticks
-/playerManager batch action all stop               # stop everything
+/playerManager batch bot 1 45 use continuous      # continuous right click
+/playerManager batch bot 1 45 attack interval 5  # attack every 5 ticks
+/playerManager batch bot 1 45 look north          # look direction
+/playerManager batch all 1 1 stop                 # stop everything
 ```
+
+Actions and arguments are tab-completed; the nodes are copied from the `/player` command tree,
+so new Carpet actions show up automatically. Targets follow Carpet Org: `batch bot 1 45` means
+`bot_1` .. `bot_45`.
 
 The action list is derived from the `/player` command tree at runtime; run `/playerManager batch action` without arguments to print it.
 

@@ -68,10 +68,10 @@ public class CcuServer implements CarpetExtension {
 	@Override
 	public void onServerLoaded(MinecraftServer server) {
 		debug("服务器已加载");
-		// 命令树此时通常已建好（所有模组都注册完毕），把批量动作并进 Carpet Org 的批量命令
-		commandsAttached = BatchPlayerActionCommand.attachToBatchCommand(server) > 0;
-		// 把加载范围并进 Carpet 的 /player <名字> load
+		// 先挂 /player <名字> load，再把 /player 的动作整棵复制到 Carpet Org 的批量命令下：
+		// 顺序反了会漏掉 load 这个动作
 		loadRangeAttached = LoadRangeCommand.attachToPlayerCommand(server) > 0;
+		commandsAttached = BatchPlayerActionCommand.attachToBatchCommand(server) > 0;
 		// 读取假人加载范围配置（按名字保存，重新召唤后依然生效）
 		FakePlayerChunkLoader.load();
 		// 读取矿车锚点：重启后先把这些矿车所在区块加载起来，否则扫不到实体、加载器会一直空转
@@ -90,10 +90,10 @@ public class CcuServer implements CarpetExtension {
 		if (!commandsAttached && attachAttempts < 3) {
 			// 命令树可能晚于 onServerLoaded 建好，这里兜底重试几次（没装 Carpet Org 时不做无谓尝试）
 			attachAttempts++;
-			commandsAttached = BatchPlayerActionCommand.attachToBatchCommand(server) > 0;
 			if (!loadRangeAttached) {
 				loadRangeAttached = LoadRangeCommand.attachToPlayerCommand(server) > 0;
 			}
+			commandsAttached = BatchPlayerActionCommand.attachToBatchCommand(server) > 0;
 		}
 		// 假人加载范围：按配置给假人维持区块 ticket（内部每 20 刻对账一次）
 		FakePlayerChunkLoader.tick(server);
@@ -130,9 +130,9 @@ public class CcuServer implements CarpetExtension {
 	@Override
 	public void onReload(MinecraftServer server) {
 		debug("服务器 /reload");
-		// 资源重载会重建命令树，需要重新挂载
-		BatchPlayerActionCommand.attachToBatchCommand(server);
+		// 资源重载会重建命令树，需要重新挂载（顺序同 onServerLoaded）
 		LoadRangeCommand.attachToPlayerCommand(server);
+		BatchPlayerActionCommand.attachToBatchCommand(server);
 	}
 
 	// ---------------------------------------------------------------- 元信息

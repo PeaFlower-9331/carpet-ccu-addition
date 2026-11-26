@@ -7,7 +7,7 @@
 | `debugLog` | boolean | `false` | CCU / creative / feature | 输出本模组的详细生命周期日志，仅影响日志详细程度 |
 | `fakePlayerSpawnPreload` | boolean | `true` | CCU / CCU_fake_player / survival / feature | 召唤假人时先异步预加载档案再召唤，避免卡顿 |
 | `fakePlayerRejoinKeepRiding` | boolean | `true` | CCU / CCU_fake_player / survival / feature | 假人重新上线（TIS rejoin / GCA 假人驻留）后回到原来乘坐的载具 |
-| `commandBatchPlayerAction` | string | `"ops"` | CCU / CCU_fake_player / command | `batch action` 的可用级别，取值同 `commandPlayer` |
+| `commandBatchPlayerAction` | string | `"ops"` | CCU / CCU_fake_player / command | 批量假人动作的可用级别，取值同 `commandPlayer` |
 | `commandPlayerLoadRange` | string | `"ops"` | CCU / CCU_fake_player / command | `/player <名字> load` 的可用级别，取值同 `commandPlayer` |
 
 ## 假人加载范围
@@ -112,72 +112,48 @@ minecartLoaderRange 8
 
 ### 命令
 
-命令并入 **Carpet Org Addition** 的批量命令（没有独立命令）：
+命令并入 **Carpet Org Addition** 的批量命令（没有独立命令），`/player` 的每个动作都挂成
+它自带的 `spawn` / `kill` / `drop` / `trial` 的兄弟子命令：
 
 ```
-/playerManager batch action <目标> <动作>
+/playerManager batch <前缀> <起始> <结束> <动作> [动作参数...]
 ```
 
 没有安装 Carpet Org Addition 时，本功能不会注册任何命令。
 
-`<目标>` 的匹配规则：
+Tab 补全按动作树走，和直接打 `/player <名字> ` 之后完全一致：
+
+```
+/playerManager batch bot 1 45 <TAB>         # stop use jump attack ... 全部动作
+/playerManager batch bot 1 45 use <TAB>     # once continuous interval
+/playerManager batch bot 1 45 look <TAB>    # north south east west up down at
+```
+
+### 目标
+
+写法与 Carpet Org 自己的批量命令一致：名字是「前缀 + 数字」，前缀没有下划线会自动补一个，
+所以 `batch bot 1 45` 对应 `bot_1` … `bot_45`；不带下划线的 `bot1` 也认，
+带 TIS / GCA 名字前缀的也认（按后缀匹配）。
 
 | 写法 | 含义 |
 | --- | --- |
-| `all` 或 `*` | 服务器上所有假人 |
-| 名字前缀 | 不区分大小写，`bot` 命中 `bot_1`、`bot_10`、`botFarm` |
+| `<前缀> <起始> <结束>` | `前缀_起始` … `前缀_结束`，起始大于结束会自动交换 |
+| `all` 或 `*` | 所有假人（忽略区间） |
 
 只作用于假人（`EntityPlayerMPFake`），**不会误控真人玩家**。
 
 ### 动作
 
-**列表直接由 Carpet 的 `/player` 命令树实时生成**（并按动作自身的 `requires` 过滤），所以和 `/player` 完全一致，Carpet 以后增删动作这里自动跟随。
-
-查看当前可用动作：
-
-```
-/playerManager batch action      # 不带参数即列出动作
-```
-
-在默认配置（Carpet 1.4.193 + Carpet Org 1.41.7）下共 20 个：
-
-| 动作 | 参数 | 说明 |
-| --- | --- | --- |
-| `stop` | — | 停止该假人的全部动作 |
-| `use` | `once`（默认）/ `continuous` / `interval <刻>` | 右键/使用，连续右键用 `use continuous` |
-| `jump` | 同上 | 跳跃 |
-| `attack` | 同上 | 左键攻击 |
-| `drop` | `once/continuous/interval` 或 `all/mainhand/offhand/<槽位>` | 丢弃物品 |
-| `dropStack` | 同上 | 整摞丢弃 |
-| `swapHands` | `once/continuous/interval` | 主副手交换 |
-| `hotbar` | `<槽位>` | 切换快捷栏槽位 |
-| `kill` | — | 杀死假人（使其下线） |
-| `shadow` | — | 把真人转成影子假人（对假人无效） |
-| `mount` | `[anything]` | 骑乘附近实体 |
-| `dismount` | — | 下坐骑 |
-| `sneak` / `unsneak` | — | 潜行 开/关 |
-| `sprint` / `unsprint` | — | 疾跑 开/关 |
-| `look` | `north/south/east/west/up/down/at <x y z>/<方向>` | 转向 |
-| `turn` | `left/right/back/<yaw> <pitch>` | 相对旋转 |
-| `move` | `forward/backward/left/right` | 持续移动（用 `stop` 或 `move` 停止） |
-| `spawn` | `[in <模式>] [at <坐标> ...]` | 召唤新假人；批量场景通常无意义（目标已在线） |
-
-示例：
+动作就是 `/player <名字> <动作>` 里的那一套：节点直接从 `/player` 命令树深拷贝过来，
+所以动作列表、参数、补全、权限要求全部自动同步，Carpet 以后增删动作这里也跟着变。
 
 ```bash
-# 批量连续右键
-/playerManager batch action bot use continuous
-
-# 批量跳一次 / 连续跳
-/playerManager batch action bot jump
-/playerManager batch action bot jump continuous
-
-# 批量每 5 刻攻击一次
-/playerManager batch action bot attack interval 5
-
-# 批量前进 / 停下
-/playerManager batch action bot move forward
-/playerManager batch action all stop
+/playerManager batch bot 1 45 use continuous      # 批量连续右键
+/playerManager batch bot 1 45 attack interval 5  # 批量每 5 刻攻击一次
+/playerManager batch bot 1 45 look north          # 批量转向
+/playerManager batch bot 1 45 hotbar 3            # 批量切到第 3 格
+/playerManager batch bot 1 45 load 10             # 批量调加载范围
+/playerManager batch all 1 1 stop                 # 全部停下
 ```
 
 每条动作的回显被抑制，批量操作不会刷屏，结束时只回一行汇总：
@@ -186,23 +162,31 @@ minecartLoaderRange 8
 已对 10 个假人执行：/player <名字> use continuous
 ```
 
+### 和 Carpet Org 自带子命令的关系
+
+| 子命令 | 归属 | 说明 |
+| --- | --- | --- |
+| `spawn` / `kill` / `drop` / `trial` | Carpet Org | 保留它自己的实现（例如 `kill` 走它的下班消息与分批任务），本模组不覆盖 |
+| 其余动作（`stop` / `use` / `jump` / `attack` / `look` …） | 本模组 | 从 `/player` 复制，挂成上面几个的兄弟节点 |
+
 ### 不参与批量的动作
 
 | 动作 | 原因 |
 | --- | --- |
 | `inventory` / `enderChest` | 「查看假人背包/末影箱」是打开界面的动作，一次开一堆没有意义；需要时对单个假人执行 `/player <名字> inventory` |
-| 被规则关闭的动作（如 `teleport`、`mannequin`） | 由 Carpet Org 自己的 `playerCommand` 系列开关控制，关着时 `/player` 本身也解析不到，因此不会出现在列表里 |
 
 ### 实现说明
 
-- Carpet Org 的批量命令节点形状是 `batch <prefix> <start> <end> spawn|kill|drop|trial`，
-  而它的命令名允许玩家在配置里改，所以本模组**不硬编码命令名**：服务器启动后按结构找到该节点，
-  在 `batch` 这一层挂一个 `action` 字面量。Brigadier 解析时字面量优先于参数，
-  因此 `batch action ...` 不会被当成 `prefix` 吞掉。
+- Carpet Org 的批量命令形状是 `batch <prefix> <start> <end> spawn|kill|drop|trial`，
+  而它的命令名允许玩家在配置里改，所以本模组**不硬编码命令名**：服务器启动后按结构定位该节点，
+  把 `/player <名字>` 下的动作节点**深拷贝**挂到 `<end>` 下面。
+- 深拷贝保留原来的 `requires`、参数类型和自定义补全，只把可执行位置换成批量执行，
+  因此 Tab 补全与 `/player` 一模一样。
+- 挂载顺序有讲究：先挂 `/player <名字> load`，再复制动作树，否则 `load` 这个动作会被漏掉。
+- 执行时按玩家实际输入截出动作原文，再逐条 `dispatcher.execute("player <名字> <动作>", 静默)`，
+  参数的大小写、坐标写法都原样保留。
 - 挂载在 `onServerLoaded` 做一次，未命中时在前几个 tick 重试；`/reload` 重建命令树后会重新挂载。
-- 内部通过 `dispatcher.execute("player <名字> " + 动作, source.withSuppressedOutput())` 执行，
-  既复用了 Carpet 的全部语法与校验，也自动跟随 Carpet 后续新增的动作。
-- 若服务器关闭了 Carpet 的 `commandPlayer` 规则，本命令会报“未知命令”，错误信息里会给出提示。
+- 若服务器关闭了 Carpet 的 `commandPlayer` 规则，`/player` 命令树不存在，本功能不会挂载。
 
 ## 假人召唤预加载
 
