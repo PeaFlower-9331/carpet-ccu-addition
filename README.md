@@ -42,6 +42,7 @@
 | `fakePlayerSpawnPreload` | boolean | `true` | CCU / 假人 | `/player <名字> spawn` 时先异步预加载档案再召唤，速度慢时在快捷栏上方显示进度 |
 | `fakePlayerRejoinKeepRiding` | boolean | `true` | CCU / 假人 | 假人重新上线（TIS `rejoin` / GCA 假人驻留）后回到原来乘坐的载具 |
 | `commandBatchPlayerAction` | string | `"ops"` | CCU / 假人 / command | 批量假人动作命令的可用级别，取值同 `commandPlayer` |
+| `commandPlayerLoadRange` | string | `"ops"` | CCU / 假人 / command | 加载范围命令的可用级别，取值同 `commandPlayer` |
 | `minecartChunkLoader` | boolean | `false` | CCU / 矿车 | 矿车加载器总开关 |
 | `minecartLoaderTypes` | 预设 | `minecart` | CCU / 矿车 | 触发加载的矿车种类（单选，原版七种之一） |
 | `minecartLoaderRails` | 预设 | `detector_rail` | CCU / 矿车 | 触发加载的铁轨种类（单选，原版四种之一） |
@@ -94,6 +95,21 @@
 
 两个前置 mod 都没装时规则不生效，也不会报错。
 
+### 假人加载范围
+
+```
+/player <假人名> load [半径|default]
+```
+
+```bash
+/player bot1 load            # 查看当前设置
+/player bot1 load 10         # 调到 10 区块（只能调大，无法小于服务器视距）
+/player bot1 load default    # 恢复默认
+```
+
+每 20 刻按假人所在区块强制补票、从不撤票，所以多个假人半径重叠时不会互相把票删掉；
+假人移动或下线后，旧位置的票最多 15 秒自动过期。
+
 ## 构建
 
 需要 JDK 21。
@@ -120,7 +136,7 @@ carpet-ccu-addition/
     │   ├── CcuRules.java            # 全部规则字段
     │   ├── CcuRuleRegistrar.java    # 规则注册进 /carpet
     │   ├── command/                 # 并入原生命令树的子命令
-    │   └── feature/                 # 档案预加载 / 载具恢复 / 矿车加载器
+    │   └── feature/                 # 档案预加载 / 加载范围 / 载具恢复 / 矿车加载器
     └── resources/assets/carpet-ccu-addition/lang/
 ```
 

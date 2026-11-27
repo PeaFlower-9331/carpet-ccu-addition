@@ -8,6 +8,62 @@
 | `fakePlayerSpawnPreload` | boolean | `true` | CCU / CCU_fake_player / survival / feature | 召唤假人时先异步预加载档案再召唤，避免卡顿 |
 | `fakePlayerRejoinKeepRiding` | boolean | `true` | CCU / CCU_fake_player / survival / feature | 假人重新上线（TIS rejoin / GCA 假人驻留）后回到原来乘坐的载具 |
 | `commandBatchPlayerAction` | string | `"ops"` | CCU / CCU_fake_player / command | 批量假人动作的可用级别，取值同 `commandPlayer` |
+| `commandPlayerLoadRange` | string | `"ops"` | CCU / CCU_fake_player / command | `/player <名字> load` 的可用级别，取值同 `commandPlayer` |
+
+## 假人加载范围
+
+分类：`CCU` / 假人（`CCU_fake_player`）。规则：`commandPlayerLoadRange`（string，默认 `"ops"`）。**只能调大，不能缩小。**
+
+### 命令
+
+命令并入 Carpet 的 `/player`，没有独立命令：
+
+```
+/player bot1 load              # 查看 bot1 当前的设置
+/player bot1 load 10           # 把 bot1 的加载范围调到 10 区块（实体刻）
+/player bot1 load default      # 恢复默认：跟随服务器视距
+```
+
+- 未设置的假人**不额外加载**，行为与原版一致（只按服务器 `view-distance` 加载）。
+- 设置按假人**名字**保存，写在 `config/carpet-ccu-addition/load-range.json`，假人重新召唤、服务器重启后都继续生效。
+- 半径范围 `1`–`32`；`default` 或 `-1` 表示清除。
+- **只能调大**：填的值不大于服务器视距时不会产生额外效果，命令会直接提示。
+
+### 为什么只能调大
+
+原版对玩家（包括假人）的区块加载半径由服务器视距 / 模拟距离**统一**决定，没有按玩家单独配置的入口；
+而区块 ticket 只能叠加、不能抵消。所以「给某个假人缩小」做不到——原版那部分 ticket 压不下去。
+
+本功能因此只做加法：给指定假人额外挂一个区块 ticket，把它周围更多区块强制保持加载。
+
+```
+TicketType(自带 15 秒超时, 加载 + 模拟)
+  → ServerChunkCache#addTicketWithRadius(type, 假人所在区块, 半径 + 2)
+```
+
+换算关系：`TicketStorage#addTicketWithRadius(type, pos, r)` 创建的 ticket 等级是 `33 - r`，
+而 ticket 等级每远离一个区块 +1，实体刻要求等级 ≤ 31；因此想要「半径 R 内实体刻」需要传 `R + 2`。
+
+### 只挂票，不撤票
+
+区块 ticket **没有引用计数**：两个假人半径重叠时共用的是同一条 ticket，任何一个假人调用
+`removeTicket` 都会把整条删掉，另一个假人的覆盖也跟着没了。以前的版本靠「每 20 刻补挂一次」
+来兜这个洞，中途仍会有最多 1 秒的空窗。
+
+现在改成**只挂不撤**：
+
+- 每 20 刻按假人**当前所在区块**强制补挂一次，票的超时一直被续着；
+- 假人移动或下线时**不撤票**，旧位置交给 15 秒超时自然回收；
+- 所以「别人撤票导致自己掉加载」的情况从根上不存在了，也不需要补偿式的空窗。
+
+### 注意
+
+| 事项 | 说明 |
+| --- | --- |
+| 只能调大，不能缩小 | 原版对玩家本身就有视距范围内的 ticket，设置值 ≤ 服务器视距时效果等同未设置 |
+| 旧位置会残留一会儿 | 假人移动后旧区块的票不会立刻撤销，最多多保留 15 秒 |
+| 开销 | 半径每 +1，ticket 覆盖的区块按平方增长，32 区块 ≈ 4000+ 区块，注意服务器性能 |
+| 生效延迟 | 新区块需要生成，半径较大时第一次生效可能要几秒到十几秒 |
 
 ## 矿车加载器
 

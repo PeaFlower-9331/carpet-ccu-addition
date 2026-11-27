@@ -76,6 +76,12 @@ public final class CcuRules {
 	@Rule(categories = {CCU, CCU_FAKE_PLAYER, RuleCategory.COMMAND})
 	public static String commandBatchPlayerAction = "ops";
 
+	/**
+	 * 控制 {@code /player <名字> load} 命令的可用级别，取值同 {@code commandPlayer}。
+	 */
+	@Rule(categories = {CCU, CCU_FAKE_PLAYER, RuleCategory.COMMAND})
+	public static String commandPlayerLoadRange = "ops";
+
 	// ---------------------------------------------------------------- 矿车加载器
 
 	@Rule(categories = {CCU, CCU_MINECART, RuleCategory.FEATURE, RuleCategory.CREATIVE})

@@ -34,5 +34,9 @@
 	"carpet.rule.minecartScanInterval.extra.0": "调小判定更及时（矿车推进周期里可能只有 2 刻停在目标铁轨上），代价是每轮都要遍历实体并挂票；调大更省，但可能漏判。",
 	"carpet.rule.minecartScanInterval.extra.1": "连续两轮续票时矿车都在同一区块，会自动改用 30 秒的长票，静止的机器多留一倍容错。",
 	"carpet.rule.minecartLoaderTypes.extra.0": "一条规则只匹配一种矿车；以前那种逗号列表的写法不再支持。",
-	"carpet.rule.minecartLoaderRails.extra.0": "一条规则只匹配一种铁轨；以前那种逗号列表的写法不再支持。"
+	"carpet.rule.minecartLoaderRails.extra.0": "一条规则只匹配一种铁轨；以前那种逗号列表的写法不再支持。",
+	"carpet.rule.commandPlayerLoadRange.name": "假人加载范围命令",
+	"carpet.rule.commandPlayerLoadRange.desc": "开启 /player <假人名> load [半径|default]：给单个假人调大加载范围（区块数）。只能调大，压不到服务器视距以下。取值 false / true / ops / 0-4，含义与 commandPlayer 相同。",
+	"carpet.rule.commandPlayerLoadRange.extra.0": "例如 /player bot1 load 10；/player bot1 load default 恢复成跟随服务器视距。",
+	"carpet.rule.commandPlayerLoadRange.extra.1": "每 20 刻按假人当前所在区块强制补票、从不撤票：区块 ticket 没有引用计数，撤票会连带删掉别的假人共享的那条；旧位置交给 15 秒超时自然回收。"
 }

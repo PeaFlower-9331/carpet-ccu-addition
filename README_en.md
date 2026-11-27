@@ -42,6 +42,7 @@ All rules live in Carpet's main settings manager: `/carpet <rule> <value>`. Cate
 | `fakePlayerSpawnPreload` | boolean | `true` | CCU / fake_player | `/player <name> spawn` preloads the profile asynchronously; slow lookups show progress above the hotbar |
 | `fakePlayerRejoinKeepRiding` | boolean | `true` | CCU / fake_player | Restores the vehicle a bot was riding when it comes back online (TIS `rejoin` / GCA fake player resident) |
 | `commandBatchPlayerAction` | string | `"ops"` | CCU / fake_player / command | Permission level of the batch action command, same values as `commandPlayer` |
+| `commandPlayerLoadRange` | string | `"ops"` | CCU / fake_player / command | Permission level of the load range command, same values as `commandPlayer` |
 | `minecartChunkLoader` | boolean | `false` | CCU / minecart | Master switch of the minecart chunk loader |
 | `minecartLoaderTypes` | preset | `minecart` | CCU / minecart | Cart type that triggers loading (one of the seven vanilla carts) |
 | `minecartLoaderRails` | preset | `detector_rail` | CCU / minecart | Rail type that triggers loading (one of the four vanilla rails) |
@@ -94,6 +95,22 @@ How it works: the vehicle UUID is read from `RootVehicle` in playerdata, then th
 that chunk is loaded. It only re-mounts and never spawns a vehicle (no duplicate carts); the vehicle must be
 within 8 blocks and the mod waits at most 15 seconds, so `/player <name> spawn` elsewhere never drags the bot
 back to an old vehicle. Without either mod the rule does nothing and never errors.
+
+## Fake player load range
+
+```
+/player <bot> load [radius|default]
+```
+
+```bash
+/player bot1 load            # query
+/player bot1 load 10         # enlarge to 10 chunks (enlarge only)
+/player bot1 load default    # reset
+```
+
+Tickets are force-added at the bot's current chunk every 20 ticks and never removed, so bots with
+overlapping radii can no longer drop each other's ticket. After a bot moves or logs out, the old
+spot expires within 15 seconds.
 
 ## Building
 

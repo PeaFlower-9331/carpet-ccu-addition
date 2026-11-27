@@ -34,5 +34,9 @@
 	"carpet.rule.minecartScanInterval.extra.0": "Smaller means faster detection (a cart may only sit on the rail for 2 ticks per machine cycle) but an entity sweep and ticket grants every pass; larger is cheaper but may miss.",
 	"carpet.rule.minecartScanInterval.extra.1": "When a cart stays in the same chunk on two consecutive grants, it switches to the 30-second ticket, giving parked machines twice the slack.",
 	"carpet.rule.minecartLoaderTypes.extra.0": "One rule matches one cart type; the old comma separated list is no longer accepted.",
-	"carpet.rule.minecartLoaderRails.extra.0": "One rule matches one rail type; the old comma separated list is no longer accepted."
+	"carpet.rule.minecartLoaderRails.extra.0": "One rule matches one rail type; the old comma separated list is no longer accepted.",
+	"carpet.rule.commandPlayerLoadRange.name": "Player load range command",
+	"carpet.rule.commandPlayerLoadRange.desc": "Enables /player <bot> load [radius|default] to enlarge a single fake player's chunk loading range. Enlarge only - it can never go below the server view distance. Values: false / true / ops / 0-4, same as commandPlayer.",
+	"carpet.rule.commandPlayerLoadRange.extra.0": "For example /player bot1 load 10; /player bot1 load default restores the server view distance behaviour.",
+	"carpet.rule.commandPlayerLoadRange.extra.1": "Tickets are force-added at the bot's current chunk every 20 ticks and never removed: chunk tickets have no reference count, so removing one would also drop another bot's shared ticket. Old spots expire on their own after 15 seconds."
 }
