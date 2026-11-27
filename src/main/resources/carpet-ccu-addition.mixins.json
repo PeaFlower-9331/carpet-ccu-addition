@@ -6,7 +6,12 @@
 	"mixins": [
 		"EntityPlayerMPFakeMixin",
 		"FakePlayerVehicleMixin",
-		"PlayerCommandSourceMixin"
+		"PlayerCommandSourceMixin",
+		"NightmarishBlockMixin",
+		"NightmarishBlockStateMixin",
+		"NightmarishLevelMixin",
+		"NightmarishPistonMixin",
+		"BuddingAmethystNoGrowthMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

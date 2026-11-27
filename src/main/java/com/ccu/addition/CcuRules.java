@@ -105,6 +105,46 @@ public final class CcuRules {
 	@Rule(categories = {CCU, CCU_MINECART, RuleCategory.FEATURE, RuleCategory.CREATIVE})
 	public static int minecartScanInterval = 100;
 
+	// ---------------------------------------------------------------- 试炼方块
+
+	/**
+	 * 透明试炼方块（beta）：把宝库 / 试炼刷怪笼 / 紫水晶母岩变成「幽灵方块」。
+	 *
+	 * <p>抗爆、不可破坏、不导电、非玩家实体可穿过；活塞推过时会先被移除，等位置变空气且周围
+	 * 稳定后按原状态复原（含不祥宝库的 {@code ominous} 属性）。只要不是 {@code false}，
+	 * 紫水晶芽就停止生长。</p>
+	 */
+	@Rule(categories = {CCU, RuleCategory.FEATURE, RuleCategory.SURVIVAL})
+	public static NightmarishMode betaTransparentNightmarishBlock = NightmarishMode.FALSE;
+
+	// ---------------------------------------------------------------- 试炼方块模式
+
+	/**
+	 * {@code betaTransparentNightmarishBlock} 的取值。
+	 */
+	public enum NightmarishMode {
+		FALSE(false, false),
+		TRIAL(true, false),
+		AMETHYST(false, true),
+		BOTH(true, true);
+
+		private final boolean trial;
+		private final boolean amethyst;
+
+		NightmarishMode(boolean trial, boolean amethyst) {
+			this.trial = trial;
+			this.amethyst = amethyst;
+		}
+
+		public boolean trial() {
+			return trial;
+		}
+
+		public boolean amethyst() {
+			return amethyst;
+		}
+	}
+
 	// ---------------------------------------------------------------- 预设
 
 	/**

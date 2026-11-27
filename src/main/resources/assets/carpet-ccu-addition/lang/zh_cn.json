@@ -38,5 +38,10 @@
 	"carpet.rule.commandPlayerLoadRange.name": "假人加载范围命令",
 	"carpet.rule.commandPlayerLoadRange.desc": "开启 /player <假人名> load [半径|default]：给单个假人调大加载范围（区块数）。只能调大，压不到服务器视距以下。取值 false / true / ops / 0-4，含义与 commandPlayer 相同。",
 	"carpet.rule.commandPlayerLoadRange.extra.0": "例如 /player bot1 load 10；/player bot1 load default 恢复成跟随服务器视距。",
-	"carpet.rule.commandPlayerLoadRange.extra.1": "每 20 刻按假人当前所在区块强制补票、从不撤票：区块 ticket 没有引用计数，撤票会连带删掉别的假人共享的那条；旧位置交给 15 秒超时自然回收。"
+	"carpet.rule.commandPlayerLoadRange.extra.1": "每 20 刻按假人当前所在区块强制补票、从不撤票：区块 ticket 没有引用计数，撤票会连带删掉别的假人共享的那条；旧位置交给 15 秒超时自然回收。",
+	"carpet.rule.betaTransparentNightmarishBlock.name": "透明试炼方块(beta)",
+	"carpet.rule.betaTransparentNightmarishBlock.desc": "把宝库、不祥宝库、试炼刷怪笼、紫水晶母岩变成幽灵方块：抗爆、不可破坏、不导电、非玩家实体可穿过；活塞推过会先移除，等位置变空气且周围稳定后按原状态复原（不祥宝库不会退化成普通宝库）。开启后紫水晶芽停止生长。",
+	"carpet.rule.betaTransparentNightmarishBlock.extra.0": "选项：false（关闭）/ trial（宝库 + 不祥宝库 + 试炼刷怪笼）/ amethyst（紫水晶母岩）/ both（两者全部）。",
+	"carpet.rule.betaTransparentNightmarishBlock.extra.1": "玩家（含假人）仍然有碰撞，只有非玩家实体——TNT、矿车、掉落物、生物——能穿过。",
+	"carpet.rule.betaTransparentNightmarishBlock.extra.2": "复原最多等 15 分钟，超时后写回配置并本局挂起，下次开服继续尝试。"
 }

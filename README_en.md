@@ -48,6 +48,7 @@ All rules live in Carpet's main settings manager: `/carpet <rule> <value>`. Cate
 | `minecartLoaderRails` | preset | `detector_rail` | CCU / minecart | Rail type that triggers loading (one of the four vanilla rails) |
 | `minecartLoaderRange` | int | `2` | CCU / minecart | Chunk radius kept loaded around the cart (1-32) |
 | `minecartScanInterval` | int | `100` | CCU / minecart | Scan interval (ticks): rail checks, ticket renewal and discovery |
+| `betaTransparentNightmarishBlock` | preset | `false` | CCU | Transparent trial blocks (beta): vaults / trial spawners / budding amethyst |
 | `debugLog` | boolean | `false` | CCU | Verbose lifecycle logging |
 
 ## Commands
@@ -111,6 +112,22 @@ back to an old vehicle. Without either mod the rule does nothing and never error
 Tickets are force-added at the bot's current chunk every 20 ticks and never removed, so bots with
 overlapping radii can no longer drop each other's ticket. After a bot moves or logs out, the old
 spot expires within 15 seconds.
+
+## Transparent trial blocks (beta)
+
+Turns vaults, ominous vaults, trial spawners and budding amethyst into ghost blocks: blast resistant,
+unbreakable, not a redstone conductor, and non-player entities pass through. Pistons push through them and
+the block is restored with its original state.
+
+```bash
+/carpet betaTransparentNightmarishBlock trial    # vault + ominous vault + trial spawner
+/carpet betaTransparentNightmarishBlock amethyst # budding amethyst
+/carpet betaTransparentNightmarishBlock both     # everything
+```
+
+- Players (including fake players) still collide; only non-player entities pass through
+- While the rule is not `false`, amethyst buds stop growing
+- A pending restore waits at most 15 minutes, then is written to disk and retried on the next start
 
 ## Building
 

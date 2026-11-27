@@ -10,6 +10,51 @@
 | `commandBatchPlayerAction` | string | `"ops"` | CCU / CCU_fake_player / command | 批量假人动作的可用级别，取值同 `commandPlayer` |
 | `commandPlayerLoadRange` | string | `"ops"` | CCU / CCU_fake_player / command | `/player <名字> load` 的可用级别，取值同 `commandPlayer` |
 
+## 透明试炼方块（beta）
+
+分类：`CCU` / `feature` / `survival`。规则：`betaTransparentNightmarishBlock`（预设，默认 `false`）。
+
+把试炼厅里的「麻烦方块」变成幽灵方块：抗爆、不可破坏、不导电、非玩家实体可以直接穿过去。
+世界吞噬者这类机器推进到宝库 / 刷怪笼 / 紫水晶母岩时，不会因为撞上这些方块卡住。
+
+### 选项
+
+| 值 | 生效方块 |
+| --- | --- |
+| `false` | 关闭（默认） |
+| `trial` | 宝库 + 不祥宝库 + 试炼刷怪笼 |
+| `amethyst` | 紫水晶母岩 |
+| `both` | 以上全部 |
+
+宝库与不祥宝库是同一个方块（`minecraft:vault`），靠 `ominous` 属性区分，但规则里合并成一类。
+
+### 行为
+
+| 行为 | 说明 |
+| --- | --- |
+| 抗爆 | 抗爆值按 1200 处理，TNT、苦力怕都炸不掉 |
+| 不可破坏 | 破坏速度为 -1，玩家和假人都挖不动 |
+| 不导电 | 不再作为红石导体 |
+| 非玩家实体可穿 | TNT、矿车、掉落物、生物可以直接穿过；**玩家（含假人）仍然有碰撞** |
+| 活塞推穿 | 活塞把它推掉后继续走，方块先消失 |
+| 推穿后复原 | 等位置变空气、周围 6 个方块连续 2 刻稳定后，按**原状态**放回（`ominous`、`facing`、`vault_state` 都保留，不祥宝库不会退化成普通宝库） |
+| 紫水晶停止生长 | 规则只要不是 `false`，紫水晶母岩就不再长新芽 |
+
+### 复原细节
+
+- 被推掉的方块会记在 `config/carpet-ccu-addition/nightmarish-blocks.json`，重启后继续尝试复原。
+- 复原最多等 **15 分钟**：超时就写回配置、本局挂起，下次开服重新计时。
+- 只处理已加载的区块：区块没加载时挂起，不会为了复原去强行加载区块。
+- 方块实体（宝库的战利品表、刷怪笼配置）随方块一起保存和还原。
+
+### 注意
+
+| 事项 | 说明 |
+| --- | --- |
+| 生物也能穿 | 非玩家实体都算，僵尸等怪也能穿过宝库，不再被挡住 |
+| 方块会短暂消失 | 活塞推过之后到复原之前是空气，机器可以正常通过 |
+| 只支持 1.21.11 | 当前只在 1.21.11 构建验证 |
+
 ## 假人加载范围
 
 分类：`CCU` / 假人（`CCU_fake_player`）。规则：`commandPlayerLoadRange`（string，默认 `"ops"`）。**只能调大，不能缩小。**
@@ -80,6 +125,7 @@ TicketType(自带 15 秒超时, 加载 + 模拟)
 | `minecartLoaderRails` | 预设 | `detector_rail` | 触发加载的铁轨种类（单选）：`detector_rail` / `rail` / `powered_rail` / `activator_rail` |
 | `minecartLoaderRange` | int | `2` | 半径（区块），取值 1–32 |
 | `minecartScanInterval` | int | `100` | 扫描间隔（刻）：判定铁轨、续票、发现新车都在这一轮 |
+| `betaTransparentNightmarishBlock` | 预设 | `false` | CCU / feature / survival | 透明试炼方块（beta）：宝库/试炼刷怪笼/紫水晶母岩变幽灵方块 |
 
 ### 示例
 

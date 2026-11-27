@@ -38,5 +38,10 @@
 	"carpet.rule.commandPlayerLoadRange.name": "Player load range command",
 	"carpet.rule.commandPlayerLoadRange.desc": "Enables /player <bot> load [radius|default] to enlarge a single fake player's chunk loading range. Enlarge only - it can never go below the server view distance. Values: false / true / ops / 0-4, same as commandPlayer.",
 	"carpet.rule.commandPlayerLoadRange.extra.0": "For example /player bot1 load 10; /player bot1 load default restores the server view distance behaviour.",
-	"carpet.rule.commandPlayerLoadRange.extra.1": "Tickets are force-added at the bot's current chunk every 20 ticks and never removed: chunk tickets have no reference count, so removing one would also drop another bot's shared ticket. Old spots expire on their own after 15 seconds."
+	"carpet.rule.commandPlayerLoadRange.extra.1": "Tickets are force-added at the bot's current chunk every 20 ticks and never removed: chunk tickets have no reference count, so removing one would also drop another bot's shared ticket. Old spots expire on their own after 15 seconds.",
+	"carpet.rule.betaTransparentNightmarishBlock.name": "Transparent trial blocks (beta)",
+	"carpet.rule.betaTransparentNightmarishBlock.desc": "Turns vaults, ominous vaults, trial spawners and budding amethyst into ghost blocks: blast resistant, unbreakable, not a redstone conductor, and non-player entities pass through. Pistons push through them and the block is restored with its original state (an ominous vault stays ominous). While enabled, amethyst buds stop growing.",
+	"carpet.rule.betaTransparentNightmarishBlock.extra.0": "Options: false / trial (vault + ominous vault + trial spawner) / amethyst (budding amethyst) / both.",
+	"carpet.rule.betaTransparentNightmarishBlock.extra.1": "Players (including fake players) still collide; only non-player entities - TNT, minecarts, item entities, mobs - pass through.",
+	"carpet.rule.betaTransparentNightmarishBlock.extra.2": "A pending restore waits at most 15 minutes, then it is written to disk and retried on the next server start."
 }

@@ -9,6 +9,7 @@ import com.ccu.addition.command.LoadRangeCommand;
 import com.ccu.addition.feature.FakePlayerChunkLoader;
 import com.ccu.addition.feature.FakePlayerRideRestore;
 import com.ccu.addition.feature.MinecartChunkLoader;
+import com.ccu.addition.feature.NightmarishBlockStore;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
@@ -74,6 +75,8 @@ public class CcuServer implements CarpetExtension {
 		commandsAttached = BatchPlayerActionCommand.attachToBatchCommand(server) > 0;
 		// 读取假人加载范围配置（按名字保存，重新召唤后依然生效）
 		FakePlayerChunkLoader.load();
+		// 读取上次没复原完的透明试炼方块
+		NightmarishBlockStore.load();
 		// 读取矿车锚点：重启后先把这些矿车所在区块加载起来，否则扫不到实体、加载器会一直空转
 		MinecartChunkLoader.loadAnchors();
 	}
@@ -99,6 +102,8 @@ public class CcuServer implements CarpetExtension {
 		FakePlayerChunkLoader.tick(server);
 		// 假人重新上线后回到原来的载具（GCA 假人驻留 / TIS rejoin）
 		FakePlayerRideRestore.tick(server);
+		// 透明试炼方块：等活塞走开后把方块放回去
+		NightmarishBlockStore.tick(server);
 		// 矿车加载器：每 5 秒给符合条件的矿车续一次加载票
 		MinecartChunkLoader.tick(server);
 	}
@@ -125,6 +130,8 @@ public class CcuServer implements CarpetExtension {
 		debug("服务器关闭");
 		// 关服前把矿车锚点落盘，避免最后几轮的变更丢失
 		MinecartChunkLoader.saveAnchors();
+		// 关服前把没复原完的透明方块登记落盘
+		NightmarishBlockStore.save();
 	}
 
 	@Override

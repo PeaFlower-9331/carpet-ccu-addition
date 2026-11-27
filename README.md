@@ -48,6 +48,7 @@
 | `minecartLoaderRails` | 预设 | `detector_rail` | CCU / 矿车 | 触发加载的铁轨种类（单选，原版四种之一） |
 | `minecartLoaderRange` | int | `2` | CCU / 矿车 | 矿车周围保持加载的区块半径（1–32） |
 | `minecartScanInterval` | int | `100` | CCU / 矿车 | 扫描间隔（刻）：判定铁轨、续票、发现新车都在这一轮 |
+| `betaTransparentNightmarishBlock` | 预设 | `false` | CCU | 透明试炼方块（beta）：宝库/刷怪笼/紫水晶母岩变幽灵方块 |
 | `debugLog` | boolean | `false` | CCU | 输出详细生命周期日志，便于排查 |
 
 ## 命令
@@ -109,6 +110,21 @@
 
 每 20 刻按假人所在区块强制补票、从不撤票，所以多个假人半径重叠时不会互相把票删掉；
 假人移动或下线后，旧位置的票最多 15 秒自动过期。
+
+## 透明试炼方块（beta）
+
+把宝库、不祥宝库、试炼刷怪笼、紫水晶母岩变成幽灵方块：抗爆、不可破坏、不导电、非玩家实体可穿过，
+活塞推过后会按原状态复原。
+
+```bash
+/carpet betaTransparentNightmarishBlock trial    # 宝库 + 不祥宝库 + 试炼刷怪笼
+/carpet betaTransparentNightmarishBlock amethyst # 紫水晶母岩
+/carpet betaTransparentNightmarishBlock both     # 全部
+```
+
+- 玩家（含假人）仍然有碰撞，只有非玩家实体能穿过
+- 规则只要不是 `false`，紫水晶芽就停止生长
+- 复原最多等 15 分钟，超时落盘，下次开服继续
 
 ## 构建
 
