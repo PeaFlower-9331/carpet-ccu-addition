@@ -37,14 +37,21 @@
 
 | 渠道 | 版本格式 | 示例 | Git tag | GitHub Release |
 | --- | --- | --- | --- | --- |
-| 测试版 | `X.Y.Z-beta.N` | `0.1.0-beta14` | `v0.1.0-beta14` | Pre-release |
-| 预览版 | `X.Y.Z-rc.N` | `0.1.0-rc.1` | `v0.1.0-rc.1` | Pre-release |
-| 正式版 | `X.Y.Z` | `0.1.0` | `v0.1.0` | Latest |
+| 测试版 | `X.Y.Z-beta.N` | `0.1.0-beta14` | `v0.1.0-beta14` | 发布仓库（Pre-release） |
+| 预览版 | `X.Y.Z-rc.N` | `0.1.0-rc.1` | `v0.1.0-rc.1` | 发布仓库（Pre-release） |
+| 正式版 | `X.Y.Z` | `0.1.0` | `v0.1.0` | 主仓库 + 发布仓库（Latest） |
 
 - 同一 `X.Y.Z` 依次经过测试版 → 预览版 → 正式版；正式版发布后再有改动升 `Z`
   （新增功能可升 `Y`），测试版从 `-beta.1` 重新计数。
 - 测试版与预览版都可能改行为；正式版之间只修 bug、做兼容，不改规则名与含义。
-- `*-rc.N` 即 release candidate（预览版），与测试版一样在 GitHub 上标为 Pre-release。
+- `*-rc.N` 即 release candidate（预览版），与测试版一样在发布仓库标为 Pre-release。
+
+## 下载
+
+- **正式版**：[主仓库 Releases](https://github.com/PeaFlower-9331/carpet-ccu-addition/releases)
+- **全部版本**（测试版 / 预览版 / 正式版）：[carpet-ccu-addition-releases](https://github.com/PeaFlower-9331/carpet-ccu-addition-releases/releases)
+
+主仓库的 Releases 只保留正式版；测试版与预览版只在主仓库打 tag，安装包统一发在发布仓库，正式版也会同步一份过去。
 
 ## 规则
 

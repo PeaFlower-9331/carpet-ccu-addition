@@ -37,15 +37,23 @@ Versions follow `X.Y.Z` and move through three channels per version:
 
 | Channel | Format | Example | Git tag | GitHub Release |
 | --- | --- | --- | --- | --- |
-| Beta (test) | `X.Y.Z-beta.N` | `0.1.0-beta14` | `v0.1.0-beta14` | Pre-release |
-| Preview (rc) | `X.Y.Z-rc.N` | `0.1.0-rc.1` | `v0.1.0-rc.1` | Pre-release |
-| Stable | `X.Y.Z` | `0.1.0` | `v0.1.0` | Latest |
+| Beta (test) | `X.Y.Z-beta.N` | `0.1.0-beta14` | `v0.1.0-beta14` | releases repo (Pre-release) |
+| Preview (rc) | `X.Y.Z-rc.N` | `0.1.0-rc.1` | `v0.1.0-rc.1` | releases repo (Pre-release) |
+| Stable | `X.Y.Z` | `0.1.0` | `v0.1.0` | main + releases repo (Latest) |
 
 - A version goes beta → rc → stable. After a stable release, bump `Z` for changes
   (or `Y` for new features) and restart at `-beta.1`.
 - Beta and rc releases may change behaviour; stable releases are bug fixes and compatibility
   work only, keeping rule names and semantics stable.
-- `-rc.N` means release candidate (preview); like betas it is marked as Pre-release on GitHub.
+- `-rc.N` means release candidate (preview); like betas it is marked as Pre-release in the releases repo.
+
+## Download
+
+- **Stable**: [releases in this repository](https://github.com/PeaFlower-9331/carpet-ccu-addition/releases)
+- **All versions** (beta / rc / stable): [carpet-ccu-addition-releases](https://github.com/PeaFlower-9331/carpet-ccu-addition-releases/releases)
+
+This repository only keeps stable releases; beta and rc versions are tagged here, while their
+release notes and jars live in the releases repository. Stable releases are mirrored there too.
 
 ## Rules
 
