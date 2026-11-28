@@ -8,6 +8,7 @@ import com.ccu.addition.command.BatchPlayerActionCommand;
 import com.ccu.addition.command.LoadRangeCommand;
 import com.ccu.addition.feature.FakePlayerChunkLoader;
 import com.ccu.addition.feature.FakePlayerRideRestore;
+import com.ccu.addition.feature.ItemChunkLoader;
 import com.ccu.addition.feature.MinecartChunkLoader;
 import com.ccu.addition.feature.NightmarishBlockStore;
 import net.minecraft.server.MinecraftServer;
@@ -106,6 +107,8 @@ public class CcuServer implements CarpetExtension {
 		NightmarishBlockStore.tick(server);
 		// 矿车加载器：每 5 秒给符合条件的矿车续一次加载票
 		MinecartChunkLoader.tick(server);
+		// 掉落物加载器：重命名过的掉落物每 5 秒给周围 3×3 区块挂票
+		ItemChunkLoader.tick(server);
 	}
 
 	@Override

@@ -43,5 +43,10 @@
 	"carpet.rule.betaTransparentNightmarishBlock.desc": "Turns vaults, ominous vaults, trial spawners and budding amethyst into ghost blocks: blast resistant, unbreakable, not a redstone conductor, and non-player entities pass through. Pistons push through them and the block is restored with its original state (an ominous vault stays ominous). While enabled, amethyst buds stop growing.",
 	"carpet.rule.betaTransparentNightmarishBlock.extra.0": "Options: false / trial (vault + ominous vault + trial spawner) / amethyst (budding amethyst) / both.",
 	"carpet.rule.betaTransparentNightmarishBlock.extra.1": "Players (including fake players) still collide; only non-player entities - TNT, minecarts, item entities, mobs - pass through.",
-	"carpet.rule.betaTransparentNightmarishBlock.extra.2": "A pending restore waits at most 15 minutes, then it is written to disk and retried on the next server start."
+	"carpet.rule.betaTransparentNightmarishBlock.extra.2": "A pending restore waits at most 15 minutes, then it is written to disk and retried on the next server start.",
+	"carpet.rule.namedItemChunkLoader.name": "Item chunk loader",
+	"carpet.rule.namedItemChunkLoader.desc": "A renamed dropped item acts as a chunk loader: every 5 seconds it grants strong loading tickets to the surrounding 3x3 chunks (entity ticking). The item despawns after 5 minutes and loading stops.",
+	"carpet.rule.namedItemChunkLoader.extra.0": "Only items with a custom name count; ordinary drops from farms do not trigger it.",
+	"carpet.rule.namedItemChunkLoader.extra.1": "The 3x3 chunks are entity ticking; one further ring is loaded without ticking. Tickets expire after 15 seconds, so loading stops at most 15 seconds after the item disappears.",
+	"carpet.rule.namedItemChunkLoader.extra.2": "At most 256 loaders at a time; nothing is persisted across restarts, drop a new item instead."
 }

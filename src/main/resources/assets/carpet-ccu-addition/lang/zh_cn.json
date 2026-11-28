@@ -43,5 +43,10 @@
 	"carpet.rule.betaTransparentNightmarishBlock.desc": "把宝库、不祥宝库、试炼刷怪笼、紫水晶母岩变成幽灵方块：抗爆、不可破坏、不导电、非玩家实体可穿过；活塞推过会先移除，等位置变空气且周围稳定后按原状态复原（不祥宝库不会退化成普通宝库）。开启后紫水晶芽停止生长。",
 	"carpet.rule.betaTransparentNightmarishBlock.extra.0": "选项：false（关闭）/ trial（宝库 + 不祥宝库 + 试炼刷怪笼）/ amethyst（紫水晶母岩）/ both（两者全部）。",
 	"carpet.rule.betaTransparentNightmarishBlock.extra.1": "玩家（含假人）仍然有碰撞，只有非玩家实体——TNT、矿车、掉落物、生物——能穿过。",
-	"carpet.rule.betaTransparentNightmarishBlock.extra.2": "复原最多等 15 分钟，超时后写回配置并本局挂起，下次开服继续尝试。"
+	"carpet.rule.betaTransparentNightmarishBlock.extra.2": "复原最多等 15 分钟，超时后写回配置并本局挂起，下次开服继续尝试。",
+	"carpet.rule.namedItemChunkLoader.name": "掉落物区块加载器",
+	"carpet.rule.namedItemChunkLoader.desc": "重命名过的掉落物会充当区块加载器：每 5 秒给周围 3×3 区块挂强加载票（实体刻），掉落物 5 分钟后自然消失即停止加载。",
+	"carpet.rule.namedItemChunkLoader.extra.0": "只有带自定义名字的掉落物算加载器，农场刷出来的普通掉落物不会触发。",
+	"carpet.rule.namedItemChunkLoader.extra.1": "3×3 区块全部处于实体刻，再外一圈只加载不刻；票 15 秒过期，掉落物消失后最迟 15 秒停止。",
+	"carpet.rule.namedItemChunkLoader.extra.2": "同时最多 256 个加载器；重启后不保留，需要重新丢一个。"
 }

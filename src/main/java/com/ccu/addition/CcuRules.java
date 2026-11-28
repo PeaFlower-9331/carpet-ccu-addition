@@ -105,6 +105,15 @@ public final class CcuRules {
 	@Rule(categories = {CCU, CCU_MINECART, RuleCategory.FEATURE, RuleCategory.CREATIVE})
 	public static int minecartScanInterval = 100;
 
+	/**
+	 * 掉落物区块加载器：重命名过的掉落物会充当加载器，每 5 秒给周围 3×3 区块挂强加载票。
+	 *
+	 * <p>只认带自定义名字的掉落物，避免农场刷出来的普通掉落物把服务器铺满加载区。
+	 * 掉落物 5 分钟（6000 刻）后自然消失，票不再续期，15 秒后自动过期。</p>
+	 */
+	@Rule(categories = {CCU, RuleCategory.FEATURE, RuleCategory.CREATIVE})
+	public static boolean namedItemChunkLoader = false;
+
 	// ---------------------------------------------------------------- 试炼方块
 
 	/**
