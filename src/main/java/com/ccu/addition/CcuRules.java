@@ -9,7 +9,7 @@ import carpet.api.settings.RuleCategory;
  * <p>加一条规则的步骤：</p>
  * <ol>
  *     <li>在下面加一个 {@code public static} 字段，带上 {@link Rule} 注解；</li>
- *     <li>在 {@code assets/carpet_ccu/lang/en_us.json} 与 {@code zh_cn.json} 里补
+ *     <li>在 {@code assets/carpet-ccu-addition/lang/en_us.json} 与 {@code zh_cn.json} 里补
  *     {@code carpet.rule.<字段名>.name} 与 {@code .desc}；</li>
  *     <li>在功能代码里直接读这个字段。</li>
  * </ol>
@@ -17,8 +17,8 @@ import carpet.api.settings.RuleCategory;
  * <p>字段必须是 public static 且非 final；可选类型与 Carpet 原生规则一致
  * （boolean / int / double / String / 枚举 等）。</p>
  *
- * <p>因为规则挂在主 {@code /carpet} 命名空间下，字段名建议保留 {@code ccu} 前缀，
- * 避免与其它附属的规则重名（重名会让 Carpet 在启动时直接报错）。</p>
+ * <p>规则挂在主 {@code /carpet} 命名空间下，字段名与其它附属重名会让 Carpet 在启动时直接报错，
+ * 新增规则时取一个带本模组特征的名字即可（现有规则沿用不加前缀的写法）。</p>
  */
 public final class CcuRules {
 

@@ -122,9 +122,7 @@ public class CcuServer implements CarpetExtension {
 	public void onPlayerLoggedOut(ServerPlayer player) {
 		debug("玩家登出：%s", player.getScoreboardName());
 		// 只清记录，票等它自己过期：撤票会连带删掉别的假人共享的那条
-		if (player.level() instanceof net.minecraft.server.level.ServerLevel level) {
-			FakePlayerChunkLoader.forget(level.getServer(), player.getUUID());
-		}
+		FakePlayerChunkLoader.forget(player.getUUID());
 		FakePlayerRideRestore.forget(player.getUUID());
 	}
 

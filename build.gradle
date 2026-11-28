@@ -27,7 +27,8 @@ tasks.register('buildAndGather') {
 			if (libs.exists()) {
 				copy {
 					from libs
-					include '*.jar'
+					// 只收当前版本：版本目录里还留着历史构建的 jar，不筛会把 beta1…beta12 全抄进来
+					include "*-${p.version}.jar"
 					exclude '*-dev.jar', '*-sources.jar'
 					into rootLibs
 				}

@@ -22,6 +22,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -48,7 +49,8 @@ import java.util.Set;
  *
  * <p>目标解析沿用 Carpet Org 的语义：名字是「前缀 + 数字」，前缀没写下划线会自动补一个，
  * 所以 {@code batch bot 1 45} 对应 {@code bot_1} … {@code bot_45}；同时也接受不带下划线的
- * {@code bot1}，以及带 TIS / GCA 名字前缀的写法（按后缀匹配）。`all` 或 `*` 表示所有假人。</p>
+ * {@code bot1}，以及带 TIS / GCA 名字前缀的写法（按后缀匹配，但要求前缀以非字母数字结尾）。
+ * {@code all} 或 {@code *} 表示所有假人。</p>
  *
  * <p>与 Carpet Org 自带的 {@code spawn} / {@code kill} / {@code drop} / {@code trial} 重名时不覆盖，
  * 保留它自己的实现（{@code kill} 会走它的下班消息与分批任务）。</p>
@@ -60,6 +62,14 @@ public final class BatchPlayerActionCommand {
 	 * 一次开一堆背包/末影箱既没有意义，也需要真实的玩家来源。批量时直接跳过。
 	 */
 	private static final Set<String> NOT_BATCHABLE = Set.of("inventory", "enderChest");
+
+	/**
+	 * 一次批量最多覆盖多少个编号。
+	 *
+	 * <p>目标解析是「每个玩家 × 区间长度」的双层循环，区间开到上亿会把主线程卡死；
+	 * 这里给个远大于实际用量的上限（几千个假人已经不可能了）。</p>
+	 */
+	private static final int MAX_TARGET_SPAN = 10_000;
 
 	/**
 	 * 批量目标里代表「所有假人」的前缀。
@@ -205,6 +215,15 @@ public final class BatchPlayerActionCommand {
 			return 0;
 		}
 
+		String prefix = StringArgumentType.getString(context, "prefix");
+		int start = IntegerArgumentType.getInteger(context, "start");
+		int end = IntegerArgumentType.getInteger(context, "end");
+		if (!ALL_TARGETS.contains(prefix.toLowerCase(Locale.ROOT))
+				&& Math.abs((long) end - start) + 1 > MAX_TARGET_SPAN) {
+			source.sendFailure(Component.literal("批量区间过大：一次最多 " + MAX_TARGET_SPAN + " 个编号"));
+			return 0;
+		}
+
 		List<ServerPlayer> bots = resolveTargets(server, context);
 		if (bots.isEmpty()) {
 			source.sendFailure(Component.literal("没有匹配的假人：" + describeTarget(context)));
@@ -259,6 +278,9 @@ public final class BatchPlayerActionCommand {
 
 	/**
 	 * 按 Carpet Org 的「前缀 + 数字」语义解析目标假人。
+	 *
+	 * <p>先把区间展开成候选名字集合（最多 {@value #MAX_TARGET_SPAN} 个），再逐个假人比对；
+	 * 这样开销是「区间长度 + 假人数 × 名字长度」，不随两者相乘增长。</p>
 	 */
 	private static List<ServerPlayer> resolveTargets(MinecraftServer server, CommandContext<CommandSourceStack> context) {
 		String prefix = StringArgumentType.getString(context, "prefix");
@@ -271,33 +293,44 @@ public final class BatchPlayerActionCommand {
 		// Carpet Org 的约定：前缀没有下划线时自动补一个，batch bot 1 45 对应 bot_1 … bot_45
 		String base = prefix.endsWith("_") ? prefix : prefix + "_";
 
+		Set<String> wanted = new HashSet<>();
+		if (!all) {
+			for (int i = from; i <= to; i++) {
+				wanted.add((prefix + i).toLowerCase(Locale.ROOT));
+				wanted.add((base + i).toLowerCase(Locale.ROOT));
+			}
+		}
+
 		List<ServerPlayer> bots = new ArrayList<>();
 		for (ServerPlayer player : server.getPlayerList().getPlayers()) {
 			if (!(player instanceof EntityPlayerMPFake)) {
 				continue;
 			}
-			String name = player.getScoreboardName();
 			if (all) {
 				bots.add(player);
 				continue;
 			}
-			for (int i = from; i <= to; i++) {
-				if (matchesName(name, prefix + i) || matchesName(name, base + i)) {
-					bots.add(player);
-					break;
-				}
+			String name = player.getScoreboardName().toLowerCase(Locale.ROOT);
+			if (wanted.contains(name) || hasWantedSuffix(name, wanted)) {
+				bots.add(player);
 			}
 		}
 		return bots;
 	}
 
 	/**
-	 * 名字匹配：完全相等，或（带 TIS / GCA 名字前缀时）以目标名结尾。
+	 * 带 TIS / GCA 名字前缀时的匹配：目标名必须从分隔符之后开始。
+	 *
+	 * <p>例如 {@code batch bot 1 45} 能命中 {@code tis_bot_1}，但不会命中 {@code mybot_1}
+	 * ——目标名前面必须是字母数字之外的字符。</p>
 	 */
-	private static boolean matchesName(String actual, String candidate) {
-		String name = actual.toLowerCase(Locale.ROOT);
-		String target = candidate.toLowerCase(Locale.ROOT);
-		return name.equals(target) || name.endsWith(target);
+	private static boolean hasWantedSuffix(String name, Set<String> wanted) {
+		for (int i = 1; i < name.length(); i++) {
+			if (!Character.isLetterOrDigit(name.charAt(i - 1)) && wanted.contains(name.substring(i))) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private static String describeTarget(CommandContext<CommandSourceStack> context) {

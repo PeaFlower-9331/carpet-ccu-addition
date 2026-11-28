@@ -28,12 +28,7 @@ import java.util.List;
  * /player bot1 load default  // 恢复默认（跟随服务器视距）
  * </pre>
  *
- * <p>同时保留独立命令 {@code /ccuload}（等价功能，便于没装 Carpet 时或习惯单独命令的场景）：</p>
- * <pre>
- * /ccuload                 // 列出全部设置
- * /ccuload bot1 16
- * /ccuload bot1 default
- * </pre>
+ * <p>本模组不注册独立命令：Carpet 没加载时 {@code /player} 命令树不存在，功能自然也不可用。</p>
  *
  * <p>设置按名字保存，假人重新召唤后依然生效；未设置的假人不额外加载，行为与原版一致。
  * 本功能<strong>只能调大</strong>，半径不大于服务器视距时不会有额外效果。</p>
@@ -115,8 +110,9 @@ public final class LoadRangeCommand {
 
 	private static int apply(CommandSourceStack source, String target, String raw) {
 		int radius;
-		if (raw.equalsIgnoreCase("default") || raw.equals("-1")) {
-			radius = -1;
+		if (raw.equalsIgnoreCase("default") || raw.equals("-1") || raw.equals("0")) {
+			// default / 0 / -1 都表示清除，恢复成跟随服务器视距
+			radius = 0;
 		} else {
 			try {
 				radius = Integer.parseInt(raw);
@@ -124,8 +120,9 @@ public final class LoadRangeCommand {
 				source.sendFailure(Component.literal("半径必须是整数或 default：" + raw));
 				return 0;
 			}
-			if (radius < 0 || radius > FakePlayerChunkLoader.MAX_RADIUS) {
-				source.sendFailure(Component.literal("半径需在 0-" + FakePlayerChunkLoader.MAX_RADIUS + " 之间：" + radius));
+			if (radius < 1 || radius > FakePlayerChunkLoader.MAX_RADIUS) {
+				source.sendFailure(Component.literal("半径需在 1-" + FakePlayerChunkLoader.MAX_RADIUS
+						+ " 之间，或用 default / 0 / -1 清除：" + radius));
 				return 0;
 			}
 		}
@@ -134,7 +131,7 @@ public final class LoadRangeCommand {
 		boolean online = source.getServer().getPlayerList().getPlayerByName(target) instanceof EntityPlayerMPFake;
 		int viewDistance = source.getServer().getPlayerList().getViewDistance();
 
-		if (radius < 0) {
+		if (radius <= 0) {
 			source.sendSuccess(() -> Component.literal("已恢复 " + target + " 的默认加载范围（跟随服务器视距"
 					+ (previous > 0 ? "，之前是 " + previous + " 区块" : "") + "）"), true);
 		} else if (radius <= viewDistance) {
@@ -147,8 +144,8 @@ public final class LoadRangeCommand {
 					+ (online ? "（已生效）" : "（该假人未在线，召唤后自动生效）")), true);
 		}
 
-		// 立即对账一次，不必等下一个检查周期
-		FakePlayerChunkLoader.tick(source.getServer());
+		// 立即对账一次，不必等下一个 20 刻的检查周期
+		FakePlayerChunkLoader.applyNow(source.getServer());
 		return 1;
 	}
 

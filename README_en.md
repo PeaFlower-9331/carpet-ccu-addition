@@ -75,9 +75,8 @@ Requires Carpet Org Addition. Every `/player` action is mounted next to its buil
 
 Actions and arguments are tab-completed; the nodes are copied from the `/player` command tree,
 so new Carpet actions show up automatically. Targets follow Carpet Org: `batch bot 1 45` means
-`bot_1` .. `bot_45`.
-
-The action list is derived from the `/player` command tree at runtime; run `/playerManager batch action` without arguments to print it.
+`bot_1` .. `bot_45`. A single batch covers at most 10000 numbers; larger ranges are rejected
+instead of freezing the server thread.
 
 ### Keeping the vehicle after a fake player comes back online
 
@@ -141,7 +140,7 @@ to the surrounding 3x3 chunks (entity ticking). The item despawns after 5 minute
 ```
 
 - Only items named exactly "区块加载器" count (configurable via `namedItemChunkLoaderName`); farm drops never trigger it
-- The 3x3 area is entity ticking, one further ring is loaded without ticking
+- The 3x3 area is entity ticking; the ring right outside it (within 5x5) is block ticking, one more ring (within 7x7) is loaded only
 - At most 256 loaders; nothing persists across restarts
 
 ## Building
@@ -154,6 +153,11 @@ JDK 21 required.
 ```
 
 `*-dev.jar` is for development only (not remapped) - do not ship it to a server.
+
+This build is verified against Carpet `1.21.11-1.4.193` / `1.21.10-1.4.188`.
+Some mixins target Carpet's internal lambda names (`lambda$createFake$1/2`), so after upgrading Carpet
+run the dev server once and spawn a fake player; on a mismatch it fails loudly while loading
+`EntityPlayerMPFake` instead of silently disabling the feature.
 
 ## License
 

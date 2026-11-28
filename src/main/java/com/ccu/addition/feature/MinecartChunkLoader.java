@@ -406,7 +406,7 @@ public final class MinecartChunkLoader {
 	}
 
 	/**
-	 * 诊断输出节流：命中数变化立刻输出，否则每 {@link #HEARTBEAT_CYCLES} 轮输出一次。
+	 * 诊断输出节流：命中数变化立刻输出，否则每 {@link #HEARTBEAT_MS} 毫秒输出一次。
 	 */
 	private static boolean shouldLog(int typeHits, int matched, int graceHits, int pistonHits, long nowMs) {
 		if (!CcuRules.debugLog) {

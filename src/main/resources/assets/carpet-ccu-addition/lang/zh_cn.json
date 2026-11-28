@@ -47,7 +47,7 @@
 	"carpet.rule.namedItemChunkLoader.name": "掉落物区块加载器",
 	"carpet.rule.namedItemChunkLoader.desc": "只有被重命名成「区块加载器」的掉落物才充当区块加载器：每 5 秒给周围 3×3 区块挂强加载票（实体刻），掉落物 5 分钟后自然消失即停止加载。",
 	"carpet.rule.namedItemChunkLoader.extra.0": "名字必须完全一致，其他名字的掉落物（包括普通农场产物）一律不加载。",
-	"carpet.rule.namedItemChunkLoader.extra.1": "3×3 区块全部处于实体刻，再外一圈只加载不刻；票 15 秒过期，掉落物消失后最迟 15 秒停止。",
+	"carpet.rule.namedItemChunkLoader.extra.1": "3×3 区块全部处于实体刻，紧挨的一圈（5×5 以内）是方块刻，再外一圈（7×7 以内）只加载不刻；票 15 秒过期，掉落物消失后最迟 15 秒停止。",
 	"carpet.rule.namedItemChunkLoader.extra.2": "同时最多 256 个加载器；重启后不保留，需要重新丢一个。",
 	"carpet.rule.namedItemChunkLoaderName.name": "加载器物品名",
 	"carpet.rule.namedItemChunkLoaderName.desc": "掉落物要重命名成什么名字才算区块加载器，默认「区块加载器」。完全匹配、区分大小写。",

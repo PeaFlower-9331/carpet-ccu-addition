@@ -78,8 +78,6 @@ public abstract class EntityPlayerMPFakeMixin {
 
 		// 取消本次召唤，等档案就绪后重放
 		cir.setReturnValue(true);
-		// 重放跨越了任务边界，rejoin 标记要显式带过去
-		boolean rejoin = RejoinState.isRejoin();
 		// 谁执行的这条 /player spawn：拿来做屏幕上的预加载状态
 		ServerPlayer source = PreloadStatus.takeSource();
 		PreloadStatus.begin(source, username);
@@ -87,8 +85,7 @@ public abstract class EntityPlayerMPFakeMixin {
 			PreloadStatus.finish(source, username);
 			CCU_REENTER.set(Boolean.TRUE);
 			try {
-				RejoinState.runWith(rejoin,
-						() -> createFake(username, server, pos, yaw, pitch, dimensionId, gamemode, flying));
+				createFake(username, server, pos, yaw, pitch, dimensionId, gamemode, flying);
 			} finally {
 				CCU_REENTER.set(Boolean.FALSE);
 			}

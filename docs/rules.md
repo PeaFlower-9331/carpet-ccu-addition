@@ -80,7 +80,8 @@
 | 范围 | 状态 |
 | --- | --- |
 | 中心所在区块 + 周围 8 个 = 3×3 | **实体刻**（掉落物、矿车、TNT 都会动） |
-| 再外一圈 | 只加载、不刻（ticket 传播的固有行为） |
+| 紧挨的一圈（5×5 以内） | **方块刻**（作物会长、冰会化；ticket 传播压不掉这一层） |
+| 再外一圈（7×7 以内） | 只加载、不刻 |
 
 3×3 的每个区块各挂一张半径 2 的票：ticket 等级 = `33 - 半径`，只有 ≤ 31 级才跑实体刻，
 半径 1 的票只能到 32 级（方块刻），掉落物根本不参与 tick，也就永远不会老化消失。
@@ -111,7 +112,7 @@
 
 - 未设置的假人**不额外加载**，行为与原版一致（只按服务器 `view-distance` 加载）。
 - 设置按假人**名字**保存，写在 `config/carpet-ccu-addition/load-range.json`，假人重新召唤、服务器重启后都继续生效。
-- 半径范围 `1`–`32`；`default` 或 `-1` 表示清除。
+- 半径范围 `1`–`32`；`default`、`0` 或 `-1` 表示清除。
 - **只能调大**：填的值不大于服务器视距时不会产生额外效果，命令会直接提示。
 
 ### 为什么只能调大
@@ -165,9 +166,6 @@ TicketType(自带 15 秒超时, 加载 + 模拟)
 | `minecartLoaderRails` | 预设 | `detector_rail` | 触发加载的铁轨种类（单选）：`detector_rail` / `rail` / `powered_rail` / `activator_rail` |
 | `minecartLoaderRange` | int | `2` | 半径（区块），取值 1–32 |
 | `minecartScanInterval` | int | `100` | 扫描间隔（刻）：判定铁轨、续票、发现新车都在这一轮 |
-| `namedItemChunkLoader` | boolean | `false` | CCU / feature / creative | 名字为「区块加载器」的掉落物充当加载器，维持周围 3×3 区块 |
-| `namedItemChunkLoaderName` | string | `"区块加载器"` | CCU / feature / creative | 掉落物要重命名成什么名字才算加载器 |
-| `betaTransparentNightmarishBlock` | 预设 | `false` | CCU / feature / survival | 透明试炼方块（beta）：宝库/试炼刷怪笼/紫水晶母岩变幽灵方块 |
 
 ### 示例
 
@@ -249,7 +247,8 @@ Tab 补全按动作树走，和直接打 `/player <名字> ` 之后完全一致�
 
 写法与 Carpet Org 自己的批量命令一致：名字是「前缀 + 数字」，前缀没有下划线会自动补一个，
 所以 `batch bot 1 45` 对应 `bot_1` … `bot_45`；不带下划线的 `bot1` 也认，
-带 TIS / GCA 名字前缀的也认（按后缀匹配）。
+带 TIS / GCA 名字前缀的也认（按后缀匹配，但目标名前面必须是分隔符，`mybot_1` 不会被 `batch bot 1 45` 命中）。
+一次最多 10000 个编号，区间写得过大会直接拒绝，避免把主线程卡住。
 
 | 写法 | 含义 |
 | --- | --- |
@@ -418,5 +417,5 @@ bot1 的档案已就绪，正在召唤                  ← 解析完成、重�
 ## 加规则的三步
 
 1. `CcuRules` 加带 `@Rule` 的 `public static` 字段；
-2. `assets/carpet_ccu/lang/{en_us,zh_cn}.json` 补 `carpet.rule.<字段名>.name` / `.desc`；
+2. `assets/carpet-ccu-addition/lang/{en_us,zh_cn}.json` 补 `carpet.rule.<字段名>.name` / `.desc`；
 3. 在功能代码里读字段，并同步更新本文件。

@@ -155,17 +155,25 @@ public final class FakePlayerChunkLoader {
 	// ---------------------------------------------------------------- 运行期
 
 	/**
-	 * 周期性补票：按配置给假人所在区块强制挂票，从不撤票。
-	 *
-	 * <p>每个周期都无条件补挂一次而不是「位置没变就跳过」，原因见类注释：原版对同类型同等级的
-	 * ticket 只保留一条，多个假人共用，别人撤票会连带撤掉本假人的覆盖。既然这里永远不撤，
-	 * 共用也就没有副作用，补挂只是把票的超时一直续着。</p>
+	 * 每 {@value #CHECK_INTERVAL} 刻对账一次：按配置给假人所在区块强制挂票，从不撤票。
 	 */
 	public static void tick(MinecraftServer server) {
 		if (server.getTickCount() % CHECK_INTERVAL != 0) {
 			return;
 		}
+		applyNow(server);
+	}
 
+	/**
+	 * 立即对账一次，不受 {@value #CHECK_INTERVAL} 刻周期限制。
+	 *
+	 * <p>命令刚改完设置时调用，否则要等下一个 20 刻边界才生效。</p>
+	 *
+	 * <p>每个周期都无条件补挂一次而不是「位置没变就跳过」，原因见类注释：原版对同类型同等级的
+	 * ticket 只保留一条，多个假人共用，别人撤票会连带撤掉本假人的覆盖。既然这里永远不撤，
+	 * 共用也就没有副作用，补挂只是把票的超时一直续着。</p>
+	 */
+	public static void applyNow(MinecraftServer server) {
 		for (ServerPlayer player : server.getPlayerList().getPlayers()) {
 			if (!(player instanceof EntityPlayerMPFake)) {
 				continue;
@@ -200,7 +208,7 @@ public final class FakePlayerChunkLoader {
 	/**
 	 * 假人下线时清掉它的记录；票不撤，最多 15 秒后自然过期。
 	 */
-	public static void forget(MinecraftServer server, UUID playerId) {
+	public static void forget(UUID playerId) {
 		APPLIED.remove(playerId);
 	}
 

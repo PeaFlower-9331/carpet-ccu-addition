@@ -46,16 +46,6 @@ public final class RejoinState {
 		return tisFlag();
 	}
 
-	public static void begin() {
-		LOCAL.set(Boolean.TRUE);
-		setTis(true);
-	}
-
-	public static void end() {
-		LOCAL.remove();
-		setTis(false);
-	}
-
 	/**
 	 * 带着指定标记执行一段逻辑，结束后恢复原值（本模组标记与 TIS 标记一起处理）。
 	 */
