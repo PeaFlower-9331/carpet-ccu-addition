@@ -164,7 +164,7 @@ TicketType(自带 15 秒超时, 加载 + 模拟)
 | `minecartChunkLoader` | boolean | `false` | 总开关 |
 | `minecartLoaderTypes` | 预设 | `minecart` | 触发加载的矿车种类（单选）：`minecart` / `chest_minecart` / `hopper_minecart` / `tnt_minecart` / `spawner_minecart` / `command_block_minecart` / `furnace_minecart` |
 | `minecartLoaderRails` | 预设 | `detector_rail` | 触发加载的铁轨种类（单选）：`detector_rail` / `rail` / `powered_rail` / `activator_rail` |
-| `minecartLoaderRange` | int | `2` | 半径（区块），取值 1–32 |
+| `minecartLoaderRange` | int | `3` | 半径（区块），取值 1–32 |
 | `minecartScanInterval` | int | `100` | 扫描间隔（刻）：判定铁轨、续票、发现新车都在这一轮 |
 
 ### 示例

@@ -1,5 +1,9 @@
 # Carpet CCU Addition
 
+> [!WARNING]
+> **This mod is still under development.** Some features modify world data (vehicles, chunk tickets,
+> block restoration, fake player configs). **Back up your world** before use and test in a copy first.
+
 [![License](https://img.shields.io/github/license/PeaFlower-9331/carpet-ccu-addition)](https://github.com/PeaFlower-9331/carpet-ccu-addition/blob/main/LICENSE)
 [![GitHub](https://img.shields.io/github/stars/PeaFlower-9331/carpet-ccu-addition?logo=github&label=GitHub)](https://github.com/PeaFlower-9331/carpet-ccu-addition)
 [![MC Versions](https://img.shields.io/badge/Minecraft-1.21.10%20%7C%201.21.11-00AF5C)](https://github.com/PeaFlower-9331/carpet-ccu-addition)
@@ -27,6 +31,22 @@ It does not change any vanilla behaviour by default; every feature is behind a r
 | 1.21.11 | Primary target |
 | 1.21.10 | Built in parallel |
 
+## Versions
+
+Versions follow `X.Y.Z` and move through three channels per version:
+
+| Channel | Format | Example | Git tag | GitHub Release |
+| --- | --- | --- | --- | --- |
+| Beta (test) | `X.Y.Z-beta.N` | `0.1.0-beta14` | `v0.1.0-beta14` | Pre-release |
+| Preview (rc) | `X.Y.Z-rc.N` | `0.1.0-rc.1` | `v0.1.0-rc.1` | Pre-release |
+| Stable | `X.Y.Z` | `0.1.0` | `v0.1.0` | Latest |
+
+- A version goes beta → rc → stable. After a stable release, bump `Z` for changes
+  (or `Y` for new features) and restart at `-beta.1`.
+- Beta and rc releases may change behaviour; stable releases are bug fixes and compatibility
+  work only, keeping rule names and semantics stable.
+- `-rc.N` means release candidate (preview); like betas it is marked as Pre-release on GitHub.
+
 ## Rules
 
 All rules live in Carpet's main settings manager: `/carpet <rule> <value>`. Category `CCU`, sub-categories `fake_player` (`CCU_fake_player`) and `minecart` (`CCU_minecart`).
@@ -46,7 +66,7 @@ All rules live in Carpet's main settings manager: `/carpet <rule> <value>`. Cate
 | `minecartChunkLoader` | boolean | `false` | CCU / minecart | Master switch of the minecart chunk loader |
 | `minecartLoaderTypes` | preset | `minecart` | CCU / minecart | Cart type that triggers loading (one of the seven vanilla carts) |
 | `minecartLoaderRails` | preset | `detector_rail` | CCU / minecart | Rail type that triggers loading (one of the four vanilla rails) |
-| `minecartLoaderRange` | int | `2` | CCU / minecart | Chunk radius kept loaded around the cart (1-32) |
+| `minecartLoaderRange` | int | `3` | CCU / minecart | Chunk radius kept loaded around the cart (1-32) |
 | `minecartScanInterval` | int | `100` | CCU / minecart | Scan interval (ticks): rail checks, ticket renewal and discovery |
 | `namedItemChunkLoader` | boolean | `false` | CCU | A dropped item named "区块加载器" acts as a chunk loader (3x3 entity ticking, gone after 5 minutes) |
 | `namedItemChunkLoaderName` | string | `"区块加载器"` | CCU | Required item name for the loader |

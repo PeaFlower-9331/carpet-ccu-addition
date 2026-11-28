@@ -27,7 +27,7 @@
 	"carpet.rule.minecartLoaderRails.name": "加载器铁轨种类",
 	"carpet.rule.minecartLoaderRails.desc": "触发加载的铁轨种类（预设，单选）：detector_rail / rail / powered_rail / activator_rail，默认 detector_rail（探测铁轨）。",
 	"carpet.rule.minecartLoaderRange.name": "加载器半径",
-	"carpet.rule.minecartLoaderRange.desc": "矿车周围保持加载的区块半径，取值 1–32，默认 2。",
+	"carpet.rule.minecartLoaderRange.desc": "矿车周围保持加载的区块半径，取值 1–32，默认 3。",
 	"carpet.rule.minecartLoaderRange.extra.0": "覆盖的区块数按半径平方增长，设太大很吃性能。",
 	"carpet.rule.minecartScanInterval.name": "加载器扫描间隔",
 	"carpet.rule.minecartScanInterval.desc": "扫描间隔（刻），默认 100 刻（20 tps 下约 5 秒）。判定铁轨、续票、发现新矿车都在这一轮里完成；只扫描已加载的区块，不会为了找车强行加载。",

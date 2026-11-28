@@ -94,7 +94,7 @@ public final class CcuRules {
 	public static RailPreset minecartLoaderRails = RailPreset.DETECTOR_RAIL;
 
 	@Rule(categories = {CCU, CCU_MINECART, RuleCategory.FEATURE, RuleCategory.CREATIVE})
-	public static int minecartLoaderRange = 2;
+	public static int minecartLoaderRange = 3;
 
 	/**
 	 * 扫描间隔（刻）。判定铁轨、续票、发现新矿车都在这一轮里做，默认 100 刻（5 秒）。

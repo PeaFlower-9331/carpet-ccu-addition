@@ -27,7 +27,7 @@
 	"carpet.rule.minecartLoaderRails.name": "Loader rail types",
 	"carpet.rule.minecartLoaderRails.desc": "Rail type that triggers loading (preset, single choice): detector_rail / rail / powered_rail / activator_rail. Default: detector_rail.",
 	"carpet.rule.minecartLoaderRange.name": "Loader radius",
-	"carpet.rule.minecartLoaderRange.desc": "Chunk radius kept loaded around the cart, 1-32, default 2.",
+	"carpet.rule.minecartLoaderRange.desc": "Chunk radius kept loaded around the cart, 1-32, default 3.",
 	"carpet.rule.minecartLoaderRange.extra.0": "The number of covered chunks grows with the square of the radius - keep it small.",
 	"carpet.rule.minecartScanInterval.name": "Loader scan interval",
 	"carpet.rule.minecartScanInterval.desc": "Scan interval in ticks, default 100 (about 5 seconds at 20 tps). Rail checks, ticket renewal and discovery of new carts all happen in this one pass; only loaded chunks are scanned.",

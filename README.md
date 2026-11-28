@@ -1,5 +1,9 @@
 # Carpet CCU Addition
 
+> [!WARNING]
+> **本模组仍处于开发状态。** 部分功能会修改存档内容（如载具、区块加载票、方块复原、假人配置等），
+> 使用前请务必**备份存档**，并先在测试世界中验证。
+
 [![License](https://img.shields.io/github/license/PeaFlower-9331/carpet-ccu-addition)](https://github.com/PeaFlower-9331/carpet-ccu-addition/blob/main/LICENSE)
 [![GitHub](https://img.shields.io/github/stars/PeaFlower-9331/carpet-ccu-addition?logo=github&label=GitHub)](https://github.com/PeaFlower-9331/carpet-ccu-addition)
 [![MC Versions](https://img.shields.io/badge/Minecraft-1.21.10%20%7C%201.21.11-00AF5C)](https://github.com/PeaFlower-9331/carpet-ccu-addition)
@@ -27,6 +31,21 @@
 | 1.21.11 | 主目标版本 |
 | 1.21.10 | 同步构建 |
 
+## 版本号
+
+版本号遵循 `X.Y.Z`，同一版本内按三档推进：
+
+| 渠道 | 版本格式 | 示例 | Git tag | GitHub Release |
+| --- | --- | --- | --- | --- |
+| 测试版 | `X.Y.Z-beta.N` | `0.1.0-beta14` | `v0.1.0-beta14` | Pre-release |
+| 预览版 | `X.Y.Z-rc.N` | `0.1.0-rc.1` | `v0.1.0-rc.1` | Pre-release |
+| 正式版 | `X.Y.Z` | `0.1.0` | `v0.1.0` | Latest |
+
+- 同一 `X.Y.Z` 依次经过测试版 → 预览版 → 正式版；正式版发布后再有改动升 `Z`
+  （新增功能可升 `Y`），测试版从 `-beta.1` 重新计数。
+- 测试版与预览版都可能改行为；正式版之间只修 bug、做兼容，不改规则名与含义。
+- `*-rc.N` 即 release candidate（预览版），与测试版一样在 GitHub 上标为 Pre-release。
+
 ## 规则
 
 规则全部挂在 Carpet 主设置管理器下，用 `/carpet <规则名> <值>` 读写；分类为 `CCU`，子分类为 `假人`（`CCU_fake_player`）与 `矿车`（`CCU_minecart`）。
@@ -46,7 +65,7 @@
 | `minecartChunkLoader` | boolean | `false` | CCU / 矿车 | 矿车加载器总开关 |
 | `minecartLoaderTypes` | 预设 | `minecart` | CCU / 矿车 | 触发加载的矿车种类（单选，原版七种之一） |
 | `minecartLoaderRails` | 预设 | `detector_rail` | CCU / 矿车 | 触发加载的铁轨种类（单选，原版四种之一） |
-| `minecartLoaderRange` | int | `2` | CCU / 矿车 | 矿车周围保持加载的区块半径（1–32） |
+| `minecartLoaderRange` | int | `3` | CCU / 矿车 | 矿车周围保持加载的区块半径（1–32） |
 | `minecartScanInterval` | int | `100` | CCU / 矿车 | 扫描间隔（刻）：判定铁轨、续票、发现新车都在这一轮 |
 | `namedItemChunkLoader` | boolean | `false` | CCU | 名字为「区块加载器」的掉落物充当加载器（3×3 实体刻，5 分钟后消失） |
 | `namedItemChunkLoaderName` | string | `"区块加载器"` | CCU | 掉落物要重命名成什么名字才算加载器 |
