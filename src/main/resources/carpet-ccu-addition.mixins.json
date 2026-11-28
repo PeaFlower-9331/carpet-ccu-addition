@@ -4,14 +4,14 @@
 	"package": "com.ccu.addition.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
-		"EntityPlayerMPFakeMixin",
-		"FakePlayerVehicleMixin",
-		"PlayerCommandSourceMixin",
-		"NightmarishBlockMixin",
-		"NightmarishBlockStateMixin",
-		"NightmarishLevelMixin",
-		"NightmarishPistonMixin",
-		"BuddingAmethystNoGrowthMixin"
+		"entity.EntityPlayerMPFakeMixin",
+		"entity.EntityPlayerMPFakeVehicleMixin",
+		"command.PlayerCommandMixin",
+		"level.LevelMixin",
+		"block.BlockMixin",
+		"block.BlockStateBaseMixin",
+		"block.BuddingAmethystBlockMixin",
+		"block.PistonBaseBlockMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

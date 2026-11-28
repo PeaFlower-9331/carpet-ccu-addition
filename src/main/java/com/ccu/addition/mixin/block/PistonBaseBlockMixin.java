@@ -1,4 +1,4 @@
-package com.ccu.addition.mixin;
+package com.ccu.addition.mixin.block;
 
 import com.ccu.addition.feature.NightmarishBlockStore;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * </ul>
  */
 @Mixin(PistonBaseBlock.class)
-public abstract class NightmarishPistonMixin {
+public abstract class PistonBaseBlockMixin {
 
 	@WrapMethod(method = "moveBlocks")
 	private boolean ccu$markMoving(Level level, BlockPos pos, Direction facing, boolean extending,

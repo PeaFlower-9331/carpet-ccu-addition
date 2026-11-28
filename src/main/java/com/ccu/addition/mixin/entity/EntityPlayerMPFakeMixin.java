@@ -1,4 +1,4 @@
-package com.ccu.addition.mixin;
+package com.ccu.addition.mixin.entity;
 
 import carpet.patches.EntityPlayerMPFake;
 import com.ccu.addition.CcuRules;

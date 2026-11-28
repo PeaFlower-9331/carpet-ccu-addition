@@ -172,7 +172,8 @@ carpet-ccu-addition/
     │   ├── CcuRules.java            # 全部规则字段
     │   ├── CcuRuleRegistrar.java    # 规则注册进 /carpet
     │   ├── command/                 # 并入原生命令树的子命令
-    │   └── feature/                 # 档案预加载 / 加载范围 / 载具恢复 / 矿车加载器
+    │   ├── feature/                 # 档案预加载 / 加载范围 / 载具恢复 / 矿车加载器
+    │   └── mixin/                   # 按目标类分包：entity / command / level / block
     └── resources/assets/carpet-ccu-addition/lang/
 ```
 

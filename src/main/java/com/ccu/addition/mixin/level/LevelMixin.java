@@ -1,4 +1,4 @@
-package com.ccu.addition.mixin;
+package com.ccu.addition.mixin.level;
 
 import com.ccu.addition.feature.NightmarishBlockStore;
 import net.minecraft.core.BlockPos;
@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * 平时这条拦截只有一次布尔判断，不会给大规模改方块的机器增加开销。</p>
  */
 @Mixin(Level.class)
-public abstract class NightmarishLevelMixin {
+public abstract class LevelMixin {
 
 	@Inject(
 			method = "setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;II)Z",

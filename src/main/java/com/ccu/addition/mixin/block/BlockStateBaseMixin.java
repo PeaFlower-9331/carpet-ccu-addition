@@ -1,4 +1,4 @@
-package com.ccu.addition.mixin;
+package com.ccu.addition.mixin.block;
 
 import com.ccu.addition.feature.NightmarishBlockStore;
 import net.minecraft.core.BlockPos;
@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * 透明试炼方块：不导电、不可破坏、活塞可推穿、非玩家实体可穿过。
  */
 @Mixin(BlockBehaviour.BlockStateBase.class)
-public abstract class NightmarishBlockStateMixin {
+public abstract class BlockStateBaseMixin {
 
 	@Inject(method = "isRedstoneConductor", at = @At("HEAD"), cancellable = true)
 	private void ccu$noRedstone(BlockGetter level, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {

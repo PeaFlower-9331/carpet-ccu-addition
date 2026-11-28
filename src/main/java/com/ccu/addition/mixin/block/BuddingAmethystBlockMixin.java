@@ -1,4 +1,4 @@
-package com.ccu.addition.mixin;
+package com.ccu.addition.mixin.block;
 
 import com.ccu.addition.CcuRules;
 import net.minecraft.core.BlockPos;
@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * 透明试炼方块：规则一旦开启（不是 {@code false}），紫水晶母岩不再生长新芽。
  */
 @Mixin(BuddingAmethystBlock.class)
-public abstract class BuddingAmethystNoGrowthMixin {
+public abstract class BuddingAmethystBlockMixin {
 
 	@Inject(method = "randomTick", at = @At("HEAD"), cancellable = true)
 	private void ccu$stopGrowth(BlockState state, ServerLevel level, BlockPos pos, RandomSource random,

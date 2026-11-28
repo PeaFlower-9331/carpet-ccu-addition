@@ -1,4 +1,4 @@
-package com.ccu.addition.mixin;
+package com.ccu.addition.mixin.command;
 
 import carpet.commands.PlayerCommand;
 import com.ccu.addition.feature.PreloadStatus;
@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * 真正的预加载拦截发生在 {@code createFake} 开头（同一线程），取走即可。</p>
  */
 @Mixin(PlayerCommand.class)
-public abstract class PlayerCommandSourceMixin {
+public abstract class PlayerCommandMixin {
 
 	@Inject(method = "spawn", at = @At("HEAD"), remap = false)
 	private static void ccu$captureSpawnSource(CommandContext<CommandSourceStack> context,

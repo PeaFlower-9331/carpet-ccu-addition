@@ -81,6 +81,9 @@ TIS 与 CuO 都用 **preprocessor**（`com.replaymod.preprocess`，Fallen-Breath
 - 语言文件放 `assets/<modid>/lang/<locale>.json`，键名 `carpet.rule.<规则名>.name/.desc/.extra.N`，
   分类键名 `carpet.category.<分类>`；通过 `Translations.getTranslationFromResourcePath` 读入。
 - 规则字段必须 `public static` 且非 `final`。
+- mixin 类名用「目标类 + Mixin」（同一目标有多个时加用途后缀），放在 `mixin/<目标种类>` 子包下
+  （如 `mixin/block/BlockMixin`）；功能名写在类注释里，不进类名——冲突或崩溃时先要能一眼看出
+  注入的是哪个类。
 - 附属的 `fabric.mod.json` 里 `depends.carpet` 必须声明，否则 Carpet 未加载时会以晦涩的
   `NoClassDefFoundError` 崩掉，而不是给出友好提示。
 - Loom 的 `runConfigs` 建议统一 `runDir`，换版本时复用同一套 run 目录。

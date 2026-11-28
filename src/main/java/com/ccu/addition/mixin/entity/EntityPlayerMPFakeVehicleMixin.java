@@ -1,4 +1,4 @@
-package com.ccu.addition.mixin;
+package com.ccu.addition.mixin.entity;
 
 import carpet.patches.EntityPlayerMPFake;
 import com.ccu.addition.CcuRules;
@@ -30,7 +30,7 @@ import java.util.Set;
  * 由于本 mixin 从不移动载具或假人的坐标，不会产生载具被挤压/贴地导致的偏移。</p>
  */
 @Mixin(EntityPlayerMPFake.class)
-public abstract class FakePlayerVehicleMixin {
+public abstract class EntityPlayerMPFakeVehicleMixin {
 
 	@WrapOperation(
 			method = "lambda$createFake$2",
