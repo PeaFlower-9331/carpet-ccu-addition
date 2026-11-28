@@ -48,7 +48,8 @@
 | `minecartLoaderRails` | 预设 | `detector_rail` | CCU / 矿车 | 触发加载的铁轨种类（单选，原版四种之一） |
 | `minecartLoaderRange` | int | `2` | CCU / 矿车 | 矿车周围保持加载的区块半径（1–32） |
 | `minecartScanInterval` | int | `100` | CCU / 矿车 | 扫描间隔（刻）：判定铁轨、续票、发现新车都在这一轮 |
-| `namedItemChunkLoader` | boolean | `false` | CCU | 重命名过的掉落物充当区块加载器（3×3 实体刻，5 分钟后消失） |
+| `namedItemChunkLoader` | boolean | `false` | CCU | 名字为「区块加载器」的掉落物充当加载器（3×3 实体刻，5 分钟后消失） |
+| `namedItemChunkLoaderName` | string | `"区块加载器"` | CCU | 掉落物要重命名成什么名字才算加载器 |
 | `betaTransparentNightmarishBlock` | 预设 | `false` | CCU | 透明试炼方块（beta）：宝库/刷怪笼/紫水晶母岩变幽灵方块 |
 | `debugLog` | boolean | `false` | CCU | 输出详细生命周期日志，便于排查 |
 
@@ -129,14 +130,14 @@
 
 ## 掉落物区块加载器
 
-丢一个重命名的掉落物就能当加载器：每 5 秒给周围 3×3 区块挂强加载票（实体刻），
+丢一个重命名成「区块加载器」的掉落物就能当加载器：每 5 秒给周围 3×3 区块挂强加载票（实体刻），
 掉落物 5 分钟（6000 刻）后自然消失即停止。
 
 ```bash
 /carpet namedItemChunkLoader true
 ```
 
-- 只认带自定义名字的掉落物，农场产物不会触发
+- 只认名字正好是「区块加载器」的掉落物（可用 `namedItemChunkLoaderName` 改），农场产物不会触发
 - 3×3 全部实体刻，再外一圈只加载不刻
 - 同时最多 256 个，重启后不保留
 

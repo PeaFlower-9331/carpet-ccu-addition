@@ -114,6 +114,12 @@ public final class CcuRules {
 	@Rule(categories = {CCU, RuleCategory.FEATURE, RuleCategory.CREATIVE})
 	public static boolean namedItemChunkLoader = false;
 
+	/**
+	 * 掉落物要重命名成什么才算加载器（完全匹配，默认「区块加载器」）。
+	 */
+	@Rule(categories = {CCU, RuleCategory.FEATURE, RuleCategory.CREATIVE})
+	public static String namedItemChunkLoaderName = "区块加载器";
+
 	// ---------------------------------------------------------------- 试炼方块
 
 	/**

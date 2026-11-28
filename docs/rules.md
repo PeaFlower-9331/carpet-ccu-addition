@@ -59,17 +59,20 @@
 
 分类：`CCU` / `feature` / `creative`。规则：`namedItemChunkLoader`（boolean，默认 `false`）。
 
-丢一个**重命名过**的掉落物就能当区块加载器用：每 5 秒给它周围 3×3 区块挂强加载票（实体刻）。
+丢一个**重命名成「区块加载器」**的掉落物就能当区块加载器用：每 5 秒给它周围 3×3 区块挂强加载票（实体刻）。
 掉落物 5 分钟（6000 刻）后自然消失，票不再续期，最多 15 秒后停止加载。
 
-### 为什么只认重命名的
+触发名字由规则 `namedItemChunkLoaderName` 控制（默认 `区块加载器`，完全匹配、区分大小写），
+改成别的名字就只认那个名字。
+
+### 为什么只认指定名字
 
 任何掉落物都算的话，农场刷出来的物品会把服务器铺满加载区（每个加载点覆盖 3×3 实体刻 + 外圈加载）。
-要求重命名之后，只有你主动丢的“加载器物品”会生效，农场产物完全不受影响。
+要求名字必须正好是「区块加载器」之后，只有你主动命名的“加载器物品”会生效，农场产物完全不受影响。
 
 ```bash
-# 用铁砧把物品重命名（名字随意），丢在地上即可
 /carpet namedItemChunkLoader true
+# 用铁砧把物品重命名成「区块加载器」，丢在地上即可
 ```
 
 ### 加载范围
@@ -162,7 +165,8 @@ TicketType(自带 15 秒超时, 加载 + 模拟)
 | `minecartLoaderRails` | 预设 | `detector_rail` | 触发加载的铁轨种类（单选）：`detector_rail` / `rail` / `powered_rail` / `activator_rail` |
 | `minecartLoaderRange` | int | `2` | 半径（区块），取值 1–32 |
 | `minecartScanInterval` | int | `100` | 扫描间隔（刻）：判定铁轨、续票、发现新车都在这一轮 |
-| `namedItemChunkLoader` | boolean | `false` | CCU / feature / creative | 重命名过的掉落物充当区块加载器，维持周围 3×3 区块 |
+| `namedItemChunkLoader` | boolean | `false` | CCU / feature / creative | 名字为「区块加载器」的掉落物充当加载器，维持周围 3×3 区块 |
+| `namedItemChunkLoaderName` | string | `"区块加载器"` | CCU / feature / creative | 掉落物要重命名成什么名字才算加载器 |
 | `betaTransparentNightmarishBlock` | 预设 | `false` | CCU / feature / survival | 透明试炼方块（beta）：宝库/试炼刷怪笼/紫水晶母岩变幽灵方块 |
 
 ### 示例

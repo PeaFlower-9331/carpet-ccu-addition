@@ -48,7 +48,8 @@ All rules live in Carpet's main settings manager: `/carpet <rule> <value>`. Cate
 | `minecartLoaderRails` | preset | `detector_rail` | CCU / minecart | Rail type that triggers loading (one of the four vanilla rails) |
 | `minecartLoaderRange` | int | `2` | CCU / minecart | Chunk radius kept loaded around the cart (1-32) |
 | `minecartScanInterval` | int | `100` | CCU / minecart | Scan interval (ticks): rail checks, ticket renewal and discovery |
-| `namedItemChunkLoader` | boolean | `false` | CCU | A renamed dropped item acts as a chunk loader (3x3 entity ticking, gone after 5 minutes) |
+| `namedItemChunkLoader` | boolean | `false` | CCU | A dropped item named "区块加载器" acts as a chunk loader (3x3 entity ticking, gone after 5 minutes) |
+| `namedItemChunkLoaderName` | string | `"区块加载器"` | CCU | Required item name for the loader |
 | `betaTransparentNightmarishBlock` | preset | `false` | CCU | Transparent trial blocks (beta): vaults / trial spawners / budding amethyst |
 | `debugLog` | boolean | `false` | CCU | Verbose lifecycle logging |
 
@@ -132,14 +133,14 @@ the block is restored with its original state.
 
 ## Item chunk loader
 
-Drop a renamed item to use it as a chunk loader: every 5 seconds it grants strong loading tickets to the
-surrounding 3x3 chunks (entity ticking). The item despawns after 5 minutes (6000 ticks) and loading stops.
+Drop an item named "区块加载器" to use it as a chunk loader: every 5 seconds it grants strong loading tickets
+to the surrounding 3x3 chunks (entity ticking). The item despawns after 5 minutes (6000 ticks) and loading stops.
 
 ```bash
 /carpet namedItemChunkLoader true
 ```
 
-- Only items with a custom name count; ordinary farm drops never trigger it
+- Only items named exactly "区块加载器" count (configurable via `namedItemChunkLoaderName`); farm drops never trigger it
 - The 3x3 area is entity ticking, one further ring is loaded without ticking
 - At most 256 loaders; nothing persists across restarts
 

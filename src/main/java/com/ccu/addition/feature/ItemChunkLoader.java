@@ -3,6 +3,7 @@ package com.ccu.addition.feature;
 import com.ccu.addition.CcuRules;
 import com.ccu.addition.CcuServer;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.TicketType;
@@ -106,9 +107,17 @@ public final class ItemChunkLoader {
 	}
 
 	/**
-	 * @return 这个掉落物是否算加载器（必须被重命名过）
+	 * @return 这个掉落物是否算加载器：名字必须与规则 {@code namedItemChunkLoaderName} 完全一致
 	 */
 	private static boolean isLoader(ItemEntity item) {
-		return item.getItem().has(DataComponents.CUSTOM_NAME);
+		Component name = item.getItem().get(DataComponents.CUSTOM_NAME);
+		if (name == null) {
+			return false;
+		}
+		String required = CcuRules.namedItemChunkLoaderName;
+		if (required == null || required.isBlank()) {
+			return false;
+		}
+		return required.strip().equals(name.getString());
 	}
 }

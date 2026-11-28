@@ -45,8 +45,11 @@
 	"carpet.rule.betaTransparentNightmarishBlock.extra.1": "Players (including fake players) still collide; only non-player entities - TNT, minecarts, item entities, mobs - pass through.",
 	"carpet.rule.betaTransparentNightmarishBlock.extra.2": "A pending restore waits at most 15 minutes, then it is written to disk and retried on the next server start.",
 	"carpet.rule.namedItemChunkLoader.name": "Item chunk loader",
-	"carpet.rule.namedItemChunkLoader.desc": "A renamed dropped item acts as a chunk loader: every 5 seconds it grants strong loading tickets to the surrounding 3x3 chunks (entity ticking). The item despawns after 5 minutes and loading stops.",
-	"carpet.rule.namedItemChunkLoader.extra.0": "Only items with a custom name count; ordinary drops from farms do not trigger it.",
+	"carpet.rule.namedItemChunkLoader.desc": "Only a dropped item renamed to \"区块加载器\" acts as a chunk loader: every 5 seconds it grants strong loading tickets to the surrounding 3x3 chunks (entity ticking). The item despawns after 5 minutes and loading stops.",
+	"carpet.rule.namedItemChunkLoader.extra.0": "The name must match exactly; items with any other name (including ordinary farm drops) never load chunks.",
 	"carpet.rule.namedItemChunkLoader.extra.1": "The 3x3 chunks are entity ticking; one further ring is loaded without ticking. Tickets expire after 15 seconds, so loading stops at most 15 seconds after the item disappears.",
-	"carpet.rule.namedItemChunkLoader.extra.2": "At most 256 loaders at a time; nothing is persisted across restarts, drop a new item instead."
+	"carpet.rule.namedItemChunkLoader.extra.2": "At most 256 loaders at a time; nothing is persisted across restarts, drop a new item instead.",
+	"carpet.rule.namedItemChunkLoaderName.name": "Loader item name",
+	"carpet.rule.namedItemChunkLoaderName.desc": "The item name that turns a dropped item into a chunk loader. Defaults to \"区块加载器\". Exact match, case sensitive.",
+	"carpet.rule.namedItemChunkLoaderName.extra.0": "Change it to e.g. \"loader\" and only items named loader will load chunks."
 }
